@@ -163,16 +163,7 @@ export const Squad = () => {
                 </div>
               </div>
 
-              {season === '2026' ? (
-                <div className="season-coming-soon">
-                  <div className="coming-soon-content">
-                    <span className="coming-soon-icon">🏏</span>
-                    <h4>2026 Season Starting Soon!</h4>
-                    <p>Stats will be available once the season begins. Check back soon!</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="rankings-table">
+              <div className="rankings-table">
                   {/* Table Header */}
                   <div className="rankings-table-header">
                     <div className="col-pos">POS</div>
@@ -251,9 +242,8 @@ export const Squad = () => {
                     )
                   })}
                 </div>
-              )}
 
-              {season === '2025' && hasMorePlayers && (
+              {hasMorePlayers && (
                 <button className="show-more-btn" onClick={() => setShowAll(!showAll)}>
                   {showAll ? (
                     <>
@@ -267,7 +257,7 @@ export const Squad = () => {
                 </button>
               )}
 
-              {season === '2025' && players.some(p => p.last_stats_update) && (
+              {players.some(p => p.last_stats_update) && (
                 <div className="stats-update-info">
                   <p>
                     Stats last updated:{' '}
