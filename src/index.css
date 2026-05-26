@@ -2336,7 +2336,7 @@ to {
 
 .rankings-table-header {
   display: grid !important;
-  grid-template-columns: 60px 1fr 80px 80px 80px 100px !important;
+  grid-template-columns: 40px 1fr 50px 50px 50px 65px !important;
   gap: 4px !important;
   padding: 16px !important;
   background: #ffffff !important;
@@ -2365,7 +2365,7 @@ to {
 
 .rankings-row {
   display: grid !important;
-  grid-template-columns: 60px 1fr 80px 80px 80px 100px !important;
+  grid-template-columns: 40px 1fr 50px 50px 50px 65px !important;
   align-items: center !important;
   gap: 4px !important;
   padding: 16px !important;
@@ -2447,7 +2447,7 @@ to {
 .rankings-table.batting-mode .rankings-row,
 .rankings-table.bowling-mode .rankings-table-header,
 .rankings-table.bowling-mode .rankings-row {
-  grid-template-columns: 60px 1fr 80px 100px 100px 100px !important;
+  grid-template-columns: 40px 1fr 45px 55px 55px 65px !important;
 }
 
 .col-points {
