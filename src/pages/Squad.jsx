@@ -173,7 +173,7 @@ export const Squad = () => {
   }
 
   const getStrikeRate = (player) => {
-    if (typeof player.strike_rate === 'number' && player.strike_rate > 0) return player.strike_rate;
+    if (typeof player.strike_rate === 'number' && (player.strike_rate > 0 || !player.total_runs)) return player.strike_rate;
     if (!player.total_runs) return 0;
     const nameLen = player.name.length;
     const val = 108.5 + (nameLen % 12) * 2.3 + (player.total_runs % 8) * 0.6;
@@ -181,7 +181,7 @@ export const Squad = () => {
   }
 
   const getBowlingOvers = (player) => {
-    if (typeof player.overs === 'number' && player.overs > 0) return player.overs;
+    if (typeof player.overs === 'number' && (player.overs > 0 || !player.total_wickets)) return player.overs;
     if (!player.total_wickets && !player.total_matches) return 0;
     const raw = (player.total_wickets || 0) * 3.4 + (player.total_matches || 0) * 1.6;
     const wholeOvers = Math.floor(raw);
@@ -190,7 +190,7 @@ export const Squad = () => {
   }
 
   const getBowlingEcon = (player) => {
-    if (typeof player.economy === 'number' && player.economy > 0) return player.economy;
+    if (typeof player.economy === 'number' && (player.economy > 0 || !player.total_wickets)) return player.economy;
     if (!player.total_wickets && !player.total_matches) return 0;
     const nameLen = player.name.length;
     const val = 7.9 - ((player.total_wickets || 0) % 4) * 0.35 + (nameLen % 6) * 0.15;
@@ -210,7 +210,7 @@ export const Squad = () => {
       return (player.total_runs > 0 || player.total_matches > 0);
     }
     if (roleFilter === 'Bowler') {
-      return (player.total_wickets > 0 || player.overs > 0 || player.total_matches > 0);
+      return (player.total_wickets > 0 || (typeof player.overs === 'number' ? player.overs > 0 : player.total_matches > 0));
     }
     return true;
   });
