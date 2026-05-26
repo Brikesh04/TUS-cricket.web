@@ -863,9 +863,10 @@ to {
 }
 
 .rankings-section {
-  max-width:900px;
-  margin:0 auto;
-  text-align:left
+  max-width: 512px; /* Premium centered constraint matching 'max-w-lg' */
+  margin: 0 auto;
+  text-align: left;
+  padding: 0 16px;
 }
 
 .rankings-header {
@@ -879,7 +880,8 @@ to {
   font-size:1.5rem;
   font-weight:700;
   color:var(--color-text);
-  margin:0
+  margin:0;
+  line-height:1.2
 }
 
 .season-selector {
@@ -889,19 +891,40 @@ to {
 }
 
 .season-dropdown {
-  padding:8px 16px;
-  border:1px solid #d1d5db;
-  border-radius:var(--radius-sm);
-  font-weight:500;
-  font-size:.9rem;
-  color:#374151;
-  background:#fff;
-  cursor:pointer;
-  transition:var(--transition-normal)
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding: 6px 32px 6px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-main);
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #374151;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2386868B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 14px;
+  background-color: #fff;
+  cursor: pointer;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  vertical-align: middle;
+  line-height: 1.2;
 }
 
 .season-dropdown:hover {
-  border-color:var(--color-accent)
+  border-color:var(--color-accent);
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.1);
+}
+
+.season-dropdown:focus {
+  outline: none;
+  border-color: var(--color-accent);
 }
 
 .sync-stats-btn {
@@ -1131,37 +1154,44 @@ to {
 }
 
 .points-tooltip {
-  position:absolute;
-  top:50%;
-  right:calc(100% + 10px);
-  transform:translateY(-50%);
-  background:#1f2937;
-  color:#fff;
-  padding:10px 14px;
-  border-radius:8px;
-  font-size:.75rem;
-  font-weight:500;
-  white-space:nowrap;
-  opacity:0;
-  visibility:hidden;
-  transition:opacity .2s ease,visibility .2s ease;
-  z-index:9999;
-  box-shadow:0 4px 20px #00000040
+  position: absolute !important;
+  bottom: calc(100% + 10px) !important;
+  left: 50% !important;
+  top: auto !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  background: #1f2937 !important;
+  color: #ffffff !important;
+  padding: 8px 12px !important;
+  border-radius: 6px !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  line-height: 1.4 !important;
+  white-space: nowrap !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: opacity .2s ease, visibility .2s ease !important;
+  z-index: 9999 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
 
 .points-tooltip:after {
-  content:"";
-  position:absolute;
-  top:50%;
-  left:100%;
-  transform:translateY(-50%);
-  border:6px solid transparent;
-  border-left-color:#1f2937
+  content: "" !important;
+  position: absolute !important;
+  top: 100% !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  border: 6px solid transparent !important;
+  border-top-color: #1f2937 !important;
+  border-left-color: transparent !important;
 }
 
-.points-info-trigger:hover .points-tooltip,.points-tooltip.visible {
-  opacity:1;
-  visibility:visible
+.points-info-trigger:hover .points-tooltip,
+.points-tooltip.visible {
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 .points-info-trigger.active {
@@ -1218,10 +1248,14 @@ to {
 }
 
 .stats-update-info {
-  margin-top:var(--spacing-lg);
-  text-align:center;
-  color:#9ca3af;
-  font-size:.8rem
+  margin-top: 24px;
+  text-align: center;
+  color: #64748b; /* Sleek, readable slate color */
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  opacity: 0.85;
 }
 
 .empty-state {
@@ -1235,9 +1269,11 @@ to {
 
 @media(max-width:768px) {
   .rankings-header {
-  flex-direction:column;
+  flex-direction:row;
+  justify-content:space-between;
+  align-items:center;
   gap:var(--spacing-md);
-  text-align:center
+  text-align:left
 }
 
 .rankings-header h3 {
@@ -1247,115 +1283,6 @@ to {
 .carousel-container {
   height:300px
 }
-
-.rankings-table-header {
-  display:none
-}
-
-.rankings-row {
-  display:flex;
-  flex-wrap:wrap;
-  padding:16px;
-  gap:10px
-}
-
-.col-pos {
-  order:1;
-  flex:0 0 40px
-}
-
-.pos-number {
-  font-size:1rem
-}
-
-.col-role {
-  order:2;
-  flex:1
-}
-
-.col-player {
-  order:3;
-  flex:0 0 100%;
-  margin-bottom:8px
-}
-
-.col-points {
-  order:4;
-  flex:0 0 100%;
-  text-align:center;
-  padding:6px 0;
-  background:#f9fafb;
-  border-radius:var(--radius-sm);
-  margin-bottom:6px
-}
-
-.col-points:before {
-  content:"Points: ";
-  font-size:.7rem;
-  color:#9ca3af;
-  font-weight:500
-}
-
-.col-runs,.col-wickets,.col-catches {
-  order:5;
-  flex:1;
-  text-align:center
-}
-
-.col-runs:before {
-  content:"R";
-  display:block;
-  font-size:.6rem;
-  color:#9ca3af;
-  font-weight:500;
-  margin-bottom:2px
-}
-
-.col-wickets:before {
-  content:"W";
-  display:block;
-  font-size:.6rem;
-  color:#9ca3af;
-  font-weight:500;
-  margin-bottom:2px
-}
-
-.col-catches:before {
-  content:"Ct";
-  display:block;
-  font-size:.6rem;
-  color:#9ca3af;
-  font-weight:500;
-  margin-bottom:2px
-}
-
-.stat-value,.points-value {
-  font-size:1rem
-}
-
-.top-player .stat-value {
-  font-size:1.1rem
-}
-
-.top-player .points-value {
-  font-size:1.2rem
-}
-
-.player-photo,.player-photo-placeholder {
-  width:48px;
-  height:48px;
-  font-size:1rem
-}
-
-.top-player .name-last {
-  font-size:1.1rem
-}
-
-.name-last {
-  font-size:.95rem
-}
-
-
 }
 
 @media(max-width:480px) {
@@ -2222,4 +2149,512 @@ to {
   flex-direction:column
 }
 
+/* --- CSV Stats Importer Styling --- */
+.importer-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+  padding: var(--spacing-xl) 0;
+}
+
+.importer-card {
+  background: #fff;
+  padding: 30px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.importer-row {
+  display: flex;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+.importer-row .form-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+.upload-zone {
+  border: 2px dashed #cbd5e1;
+  padding: 40px 20px;
+  border-radius: var(--radius-md);
+  text-align: center;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.upload-zone:hover {
+  border-color: var(--color-accent);
+  background: #f0fdfa;
+}
+
+.upload-zone .icon {
+  color: var(--color-accent);
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #f1f5f9;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.file-info button {
+  color: #ef4444;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.file-info button:hover {
+  background: #fee2e2;
+}
+
+.mapper-section {
+  background: #f8fafc;
+  padding: 24px;
+  border-radius: var(--radius-md);
+  border: 1px solid #e2e8f0;
+}
+
+.mapper-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+}
+
+.mapper-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mapper-field label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.mapper-field select {
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-md);
+  background: #fff;
+  font-size: 0.9rem;
+}
+
+.preview-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.preview-table-container {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+}
+
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.preview-table th {
+  position: sticky;
+  top: 0;
+  background: #f1f5f9;
+  z-index: 1;
+}
+
+.preview-table tr.unrecognized {
+  background: #fffbeb;
+}
+
+.preview-table tr.unrecognized:hover {
+  background: #fef3c7;
+}
+
+.preview-table tr:hover {
+  background: #f8fafc;
+}
+
+.association-badge {
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.association-badge.recognized {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.association-badge.unrecognized {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.save-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+}
+
+@media(max-width: 480px) {
+  .importer-row {
+    flex-direction: column;
+  }
+}
+
+/* --- Premium Pavilion Rankings Table Styling --- */
+.rankings-table {
+  background: #ffffff;
+  border: 1px solid #f0eded;
+  border-radius: var(--radius-md) !important;
+  overflow: visible !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+  width: 100%;
+}
+
+.rankings-table-header {
+  display: grid !important;
+  grid-template-columns: 60px 1fr 80px 80px 80px 100px !important;
+  gap: 4px !important;
+  padding: 16px !important;
+  background: #ffffff !important;
+  border-bottom: 1px solid #f0eded !important;
+  position: sticky;
+  top: 64px; /* Sticky below main navbar */
+  z-index: 10;
+  text-align: center;
+  align-items: center;
+}
+
+.rankings-table-header span {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #414754;
+  opacity: 0.6;
+}
+
+.rankings-table-header .header-col-player {
+  text-align: left;
+  padding-left: 4px;
+}
+
+.rankings-row {
+  display: grid !important;
+  grid-template-columns: 60px 1fr 80px 80px 80px 100px !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 16px !important;
+  border-bottom: 1px solid #f0eded !important;
+  background: #ffffff !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.rankings-row:active {
+  background-color: #f6f3f2 !important;
+}
+
+.rankings-row.top-player {
+  background: linear-gradient(180deg, rgba(0, 89, 187, 0.05) 0%, rgba(0, 89, 187, 0) 100%) !important;
+  border-bottom: 1px solid #f0eded !important;
+  padding: 16px !important; /* Keep consistent padding */
+}
+
+.col-pos {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pos-number {
+  font-family: 'Chivo', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: rgba(65, 71, 84, 0.3); /* default grey font */
+}
+
+.rankings-row.top-player .pos-number {
+  color: #0059bb !important; /* blue font for rank 01 */
+}
+
+.col-player {
+  display: flex;
+  flex-direction: column;
+  padding: 0 4px;
+  min-width: 0;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.player-name-container {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1A1A1A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  margin: 0;
+}
+
+.player-role-subtext {
+  font-family: 'Inter', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #414754;
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
+.col-runs, .col-wickets, .col-catches, .col-mat, .col-avg, .col-sr, .col-overs, .col-econ {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1c1b1b;
+  text-align: center;
+  display: block;
+}
+
+.rankings-table.batting-mode .rankings-table-header,
+.rankings-table.batting-mode .rankings-row,
+.rankings-table.bowling-mode .rankings-table-header,
+.rankings-table.bowling-mode .rankings-row {
+  grid-template-columns: 60px 1fr 80px 100px 100px 100px !important;
+}
+
+.col-points {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pts-badge {
+  min-width: 38px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pts-badge.top {
+  background: #bb0021; /* vibrant red bg */
+  color: #ffffff !important;
+}
+
+.pts-badge.other {
+  background: #f0eded; /* surface-container bg */
+  color: #0059bb !important; /* primary text */
+}
+
+.view-full-leaderboard-btn {
+  width: 100%;
+  padding: 16px;
+  background: #f6f3f2; /* surface-container-low */
+  border: 1px solid rgba(193, 198, 215, 0.3);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #414754;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-full-leaderboard-btn:hover {
+  background: #f0eded; /* surface-container */
+}
+
+.view-full-leaderboard-btn:active {
+  transform: scale(0.98);
+}
+
+.view-full-leaderboard-btn .chevron-icon {
+  color: #0059bb; /* primary */
+}
+
+/* --- High Fidelity Responsive Optimizations --- */
+@media (max-width: 480px) {
+  .rankings-header {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: var(--spacing-sm) !important;
+  }
+  
+  .rankings-header h3 {
+    font-size: 1.15rem !important;
+    white-space: nowrap !important;
+  }
+
+  .season-dropdown {
+    height: 32px !important;
+    padding: 0 24px 0 10px !important;
+    font-size: 0.8rem !important;
+    background-position: right 6px center !important;
+    background-size: 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .rankings-table-header, .rankings-row {
+    padding: 12px 8px !important;
+    gap: 2px !important;
+    grid-template-columns: 32px 1fr 28px 28px 28px 40px !important;
+  }
+
+  .rankings-table.batting-mode .rankings-table-header,
+  .rankings-table.batting-mode .rankings-row,
+  .rankings-table.bowling-mode .rankings-table-header,
+  .rankings-table.bowling-mode .rankings-row {
+    grid-template-columns: 32px 1fr 32px 38px 38px 40px !important;
+  }
+  
+  .pos-number {
+    font-size: 15px !important;
+  }
+  
+  .player-name-container {
+    font-size: 13px !important;
+  }
+  
+  .player-role-subtext {
+    font-size: 8px !important;
+  }
+  
+  .col-runs, .col-wickets, .col-catches, .col-mat, .col-avg, .col-sr, .col-overs, .col-econ {
+    font-size: 11px !important;
+  }
+  
+  .pts-badge {
+    min-width: 32px !important;
+    height: 20px !important;
+    font-size: 11px !important;
+  }
+
+  /* Responsive Points Tooltip to avoid mobile screen overflow */
+  .points-tooltip {
+    left: auto !important;
+    right: -10px !important;
+    transform: none !important;
+    white-space: normal !important;
+    max-width: 240px !important;
+    width: 240px !important;
+    text-align: center !important;
+  }
+  
+  .points-tooltip:after {
+    left: auto !important;
+    right: 14px !important;
+  }
+}
+
+/* --- Premium Interactive Leaderboard Enhancements --- */
+.role-filters {
+  display: flex;
+  background: #f1edea; /* Premium soft stadium grey track */
+  padding: 4px;
+  border-radius: var(--radius-md);
+  margin: 20px auto 28px auto;
+  max-width: 320px;
+  width: 90%;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.02);
+}
+
+.role-filter-btn {
+  flex: 1;
+  background: transparent !important;
+  border: none !important;
+  padding: 8px 4px !important;
+  border-radius: 8px !important;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  color: #5c6270 !important;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+  box-shadow: none !important;
+  white-space: nowrap;
+}
+
+.role-filter-btn:hover {
+  color: #111827 !important;
+}
+
+.role-filter-btn.active {
+  background: #ffffff !important; /* Premium clean white active tab */
+  color: var(--color-primary) !important; /* Active text color */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+.rankings-table-header span.sortable {
+  cursor: pointer;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+.rankings-table-header .header-col-player.sortable {
+  justify-content: flex-start;
+}
+
+.rankings-table-header span.sortable:hover {
+  color: #1f2937 !important;
+  opacity: 1 !important;
+}
+
+.rankings-table-header span.sortable.active {
+  color: var(--color-primary) !important;
+  opacity: 1 !important;
+}
+
+.sort-arrow {
+  display: inline-flex;
+  align-items: center;
+  font-size: 7px;
+  margin-left: 2px;
+  color: var(--color-primary);
+  vertical-align: middle;
+}
 
