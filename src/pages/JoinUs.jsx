@@ -130,20 +130,20 @@ const JoinForm = () => {
           </div>
         </div>
 
-        <div className="form-footer-section" style={{ marginTop: '2rem' }}>
-          <div className="form-group-checkbox" style={{ marginBottom: '1.5rem', textAlign: 'left' }}>
-            <label className="checkbox-container" style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', cursor: 'pointer', fontSize: '0.9rem' }}>
-              <input type="checkbox" name="privacy-agreement" required style={{ marginTop: '3px' }} />
+        <div className="form-footer-section join-form-footer-section">
+          <div className="form-group-checkbox join-form-group-checkbox">
+            <label className="checkbox-container join-checkbox-label">
+              <input type="checkbox" name="privacy-agreement" required className="join-checkbox-input" />
               <span>
                 I have read and agree to the{' '}
-                <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}>
+                <a href="/privacy" target="_blank" rel="noopener noreferrer" className="join-privacy-link">
                   Privacy Policy
                 </a>.
               </span>
             </label>
           </div>
 
-          <div className="form-footer" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <div className="form-footer join-form-footer">
             <button 
               type="submit" 
               className="btn btn-primary btn-large" 
@@ -173,32 +173,19 @@ export const JoinUs = () => {
 
       <main className="section-padding">
         <div className="container">
-          <div className="text-center reveal" style={{ marginBottom: '3rem' }}>
-            <h1 className="mb-2" style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: '800' }}>
+          <div className="text-center reveal join-header">
+            <h1 className="mb-2 join-title">
               Join the Squad
             </h1>
-            <p style={{ fontSize: '1.2rem', color: 'var(--color-text-secondary)' }}>
+            <p className="join-subtitle">
               Take your game to the next level with TUS Cricket Club.
             </p>
-            <div 
-              className="fade-in delay-1" 
-              style={{ 
-                display: 'inline-block', 
-                background: '#effdf5', 
-                color: '#047857', 
-                padding: '10px 24px', 
-                borderRadius: 'var(--radius-full)', 
-                fontSize: '1rem', 
-                fontWeight: '600', 
-                marginTop: '1.5rem', 
-                border: '1px solid #d1fae5' 
-              }}
-            >
+            <div className="fade-in delay-1 join-free-badge">
               ✨ First session is completely FREE!
             </div>
           </div>
 
-          <div className="reveal delay-2" style={{ maxWidth: '700px', margin: '0 auto' }}>
+          <div className="reveal delay-2 join-form-wrapper">
             <JoinForm />
           </div>
         </div>

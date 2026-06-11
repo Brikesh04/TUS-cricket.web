@@ -2658,3 +2658,150 @@ to {
   vertical-align: middle;
 }
 
+/* --- Extracted Inline Styles --- */
+
+/* Footer Page Inner Layout */
+.footer-container-inner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.footer-copyright {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.footer-links {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.footer-link-item {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+}
+
+.footer-link-admin {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.7rem;
+  opacity: 0.5;
+}
+
+.footer-divider {
+  width: 1px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 0 0.25rem;
+}
+
+.footer-social-icon {
+  color: rgba(255, 255, 255, 0.8);
+  display: flex;
+}
+
+/* Contact Page Layouts */
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 4rem;
+}
+
+.contact-card {
+  padding: 3rem;
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.contact-card-icon {
+  color: var(--color-accent);
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.contact-card-title {
+  margin-bottom: 0.5rem;
+}
+
+.contact-card-text {
+  margin-bottom: 1.5rem;
+}
+
+.contact-map {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.contact-map-iframe {
+  border: 0;
+}
+
+/* Join Us Page Layouts */
+.join-header {
+  margin-bottom: 3rem;
+}
+
+.join-title {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 800;
+}
+
+.join-subtitle {
+  font-size: 1.2rem;
+  color: var(--color-text-secondary);
+}
+
+.join-free-badge {
+  display: inline-block;
+  background: #effdf5;
+  color: #047857;
+  padding: 10px 24px;
+  border-radius: var(--radius-full);
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  border: 1px solid #d1fae5;
+}
+
+.join-form-wrapper {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.join-form-footer-section {
+  margin-top: 2rem;
+}
+
+.join-form-group-checkbox {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.join-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.join-checkbox-input {
+  margin-top: 3px;
+}
+
+.join-privacy-link {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.join-form-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+

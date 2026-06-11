@@ -18,26 +18,26 @@ export const Contact = () => {
             <p>Questions? Friendly matches? We'd love to hear from you.</p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginBottom: '4rem' }}>
+          <div className="contact-grid">
             {/* Email Card */}
-            <div className="glass shadow-md" style={{ padding: '3rem', borderRadius: 'var(--radius-lg)', textAlign: 'center' }}>
-              <div style={{ color: 'var(--color-accent)', display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+            <div className="glass shadow-md contact-card">
+              <div className="contact-card-icon">
                 <Mail size={40} strokeWidth={1.5} />
               </div>
-              <h3 style={{ marginBottom: '0.5rem' }}>Email Us</h3>
-              <p style={{ marginBottom: '1.5rem' }}>For training inquiries & matches</p>
+              <h3 className="contact-card-title">Email Us</h3>
+              <p className="contact-card-text">For training inquiries & matches</p>
               <a href="mailto:tuscricket@gmail.com" className="btn btn-secondary">
                 tuscricket@gmail.com
               </a>
             </div>
 
             {/* Visit Card */}
-            <div className="glass shadow-md" style={{ padding: '3rem', borderRadius: 'var(--radius-lg)', textAlign: 'center' }}>
-              <div style={{ color: 'var(--color-accent)', display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+            <div className="glass shadow-md contact-card">
+              <div className="contact-card-icon">
                 <MapPin size={40} strokeWidth={1.5} />
               </div>
-              <h3 style={{ marginBottom: '0.5rem' }}>Visit Us</h3>
-              <p style={{ marginBottom: '1.5rem' }}>Our Home Ground</p>
+              <h3 className="contact-card-title">Visit Us</h3>
+              <p className="contact-card-text">Our Home Ground</p>
               <a 
                 href="https://www.google.com/maps/dir/?api=1&destination=Peter-Adam-Straße+52,+84347+Pfarrkirchen" 
                 target="_blank" 
@@ -50,13 +50,12 @@ export const Contact = () => {
           </div>
 
           {/* Embedded Google Map */}
-          <div id="location-map" className="glass shadow-lg" style={{ borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+          <div id="location-map" className="glass shadow-lg contact-map">
             <iframe 
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2647.606915640246!2d12.933402175822946!3d48.425690431060374!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4775b17317668aa9%3A0x453353125ac9a1c0!2sPeter-Adam-Stra%C3%9Fe%2052%2C%2084347%20Pfarrkirchen!5e0!3m2!1sen!2sde!4v1769038923194!5m2!1sen!2sde" 
               width="100%" 
               height="450" 
-              style={{ border: 0 }} 
-              allowFullScreen="" 
+              className="contact-map-iframe"
               loading="lazy" 
               referrerPolicy="no-referrer-when-downgrade"
             />

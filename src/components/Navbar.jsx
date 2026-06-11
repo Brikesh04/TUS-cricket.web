@@ -46,16 +46,16 @@ export const Navbar = () => {
         </button>
 
         <div className={`mobile-menu glass ${isOpen ? 'active' : ''}`}>
-          <NavLink to="/" onClick={() => setIsOpen(false)} className="mobile-nav-link">
+          <NavLink to="/" onClick={() => setIsOpen(false)} className="mobile-nav-link" tabIndex={isOpen ? 0 : -1}>
             Home
           </NavLink>
-          <NavLink to="/squad" onClick={() => setIsOpen(false)} className="mobile-nav-link">
+          <NavLink to="/squad" onClick={() => setIsOpen(false)} className="mobile-nav-link" tabIndex={isOpen ? 0 : -1}>
             Squad
           </NavLink>
-          <NavLink to="/join" onClick={() => setIsOpen(false)} className="mobile-nav-link">
+          <NavLink to="/join" onClick={() => setIsOpen(false)} className="mobile-nav-link" tabIndex={isOpen ? 0 : -1}>
             Join Us
           </NavLink>
-          <NavLink to="/contact" onClick={() => setIsOpen(false)} className="mobile-nav-link">
+          <NavLink to="/contact" onClick={() => setIsOpen(false)} className="mobile-nav-link" tabIndex={isOpen ? 0 : -1}>
             Contact
           </NavLink>
         </div>

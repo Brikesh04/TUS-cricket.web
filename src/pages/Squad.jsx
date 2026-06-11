@@ -23,6 +23,8 @@ export const Squad = () => {
   const [roleFilter, setRoleFilter] = useState('All')
   const [sortBy, setSortBy] = useState('points')
   const [sortOrder, setSortOrder] = useState('desc')
+  const [error, setError] = useState(null)
+  const [reloadCounter, setReloadCounter] = useState(0)
 
   const carouselPhotos = [
     { src: '/team/team-lineup.jpg', alt: 'TUS Cricket Team Lineup' },
@@ -47,6 +49,7 @@ export const Squad = () => {
   useEffect(() => {
     const fetchSquadData = async () => {
       setIsLoading(true)
+      setError(null)
       if (!supabase) {
         setIsLoading(false)
         return
@@ -58,6 +61,10 @@ export const Squad = () => {
           supabase.from('player_stats').select('*').eq('season', parseInt(season)),
           supabase.from('mappings').select('*')
         ])
+
+        if (squadRes.error) throw squadRes.error
+        if (statsRes.error) throw statsRes.error
+        if (mappingsRes.error) throw mappingsRes.error
 
         if (squadRes.data) {
           const processedPlayers = squadRes.data.map(player => {
@@ -132,12 +139,13 @@ export const Squad = () => {
         }
       } catch (err) {
         console.error('Error fetching squad data:', err)
+        setError(err.message || 'Failed to load squad data. Please try again.')
       }
       setIsLoading(false)
     }
 
     fetchSquadData()
-  }, [season])
+  }, [season, reloadCounter])
 
   const nextPhoto = () => {
     setActivePhotoIndex((prev) => (prev + 1) % carouselPhotos.length)
@@ -173,28 +181,15 @@ export const Squad = () => {
   }
 
   const getStrikeRate = (player) => {
-    if (typeof player.strike_rate === 'number' && (player.strike_rate > 0 || !player.total_runs)) return player.strike_rate;
-    if (!player.total_runs) return 0;
-    const nameLen = player.name.length;
-    const val = 108.5 + (nameLen % 12) * 2.3 + (player.total_runs % 8) * 0.6;
-    return parseFloat(Math.min(148.5, Math.max(98.2, val)).toFixed(1));
+    return typeof player.strike_rate === 'number' ? player.strike_rate : 0
   }
 
   const getBowlingOvers = (player) => {
-    if (typeof player.overs === 'number' && (player.overs > 0 || !player.total_wickets)) return player.overs;
-    if (!player.total_wickets && !player.total_matches) return 0;
-    const raw = (player.total_wickets || 0) * 3.4 + (player.total_matches || 0) * 1.6;
-    const wholeOvers = Math.floor(raw);
-    const balls = Math.floor((raw - wholeOvers) * 6) % 6;
-    return parseFloat(`${wholeOvers}.${balls}`);
+    return typeof player.overs === 'number' ? player.overs : 0
   }
 
   const getBowlingEcon = (player) => {
-    if (typeof player.economy === 'number' && (player.economy > 0 || !player.total_wickets)) return player.economy;
-    if (!player.total_wickets && !player.total_matches) return 0;
-    const nameLen = player.name.length;
-    const val = 7.9 - ((player.total_wickets || 0) % 4) * 0.35 + (nameLen % 6) * 0.15;
-    return parseFloat(Math.min(8.95, Math.max(6.15, val)).toFixed(2));
+    return typeof player.economy === 'number' ? player.economy : 0
   }
 
   const handleSort = (field) => {
@@ -302,7 +297,15 @@ export const Squad = () => {
             </div>
           </div>
 
-          {isLoading ? (
+          {error ? (
+            <div className="error-state alert alert-danger" style={{ margin: '2rem auto', maxWidth: '600px', padding: '1.5rem', background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: 'var(--radius-md)', color: '#b91c1c', textAlign: 'center' }}>
+              <h3 style={{ margin: '0 0 0.5rem 0', fontWeight: 'bold' }}>⚠️ Failed to Load Squad</h3>
+              <p style={{ margin: '0 0 1rem 0', fontSize: '0.95rem' }}>{error}</p>
+              <button onClick={() => setReloadCounter(prev => prev + 1)} className="btn btn-secondary">
+                Try Again
+              </button>
+            </div>
+          ) : isLoading ? (
             <div className="squad-loading">Loading squad...</div>
           ) : players.length > 0 ? (
             <div className="rankings-section">
@@ -506,16 +509,22 @@ export const Squad = () => {
                             <span className="col-avg">
                               {typeof player.batting_avg === 'number' && player.batting_avg > 0 ? player.batting_avg.toFixed(1) : (player.total_matches > 0 ? (player.total_runs / player.total_matches).toFixed(1) : '0.0')}
                             </span>
-                            <span className="col-sr">{getStrikeRate(player).toFixed(1)}</span>
+                            <span className="col-sr">
+                              {getStrikeRate(player) > 0 ? getStrikeRate(player).toFixed(1) : '-'}
+                            </span>
                           </>
                         )}
 
                         {roleFilter === 'Bowler' && (
                           <>
                             <span className="col-mat">{player.total_matches || 0}</span>
-                            <span className="col-overs">{getBowlingOvers(player).toFixed(1)}</span>
+                            <span className="col-overs">
+                              {getBowlingOvers(player) > 0 ? getBowlingOvers(player).toFixed(1) : '0.0'}
+                            </span>
                             <span className="col-wickets">{player.total_wickets || 0}</span>
-                            <span className="col-econ">{getBowlingEcon(player).toFixed(2)}</span>
+                            <span className="col-econ">
+                              {getBowlingEcon(player) > 0 ? getBowlingEcon(player).toFixed(2) : '-'}
+                            </span>
                           </>
                         )}
                       </div>
