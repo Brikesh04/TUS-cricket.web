@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Info, ChevronDown, ChevronUp } from 'lucide-react'
+import { Info } from 'lucide-react'
 import Helmet from '../components/Helmet'
 import { supabase } from '../supabaseClient'
 
@@ -27,9 +27,9 @@ export const Squad = () => {
   const [reloadCounter, setReloadCounter] = useState(0)
 
   const carouselPhotos = [
-    { src: '/team/team-lineup.jpg', alt: 'TUS Cricket Team Lineup' },
-    { src: '/team/team-group.jpg', alt: 'TUS Cricket Team Group' },
-    { src: '/team/team-dinner.jpg', alt: 'TUS Cricket Team Dinner' }
+    { src: '/team/team-lineup.jpg', alt: 'TuS Cricket Team Lineup' },
+    { src: '/team/team-group.jpg', alt: 'TuS Cricket Team Group' },
+    { src: '/team/team-dinner.jpg', alt: 'TuS Cricket Team Dinner' }
   ]
 
   const getPlayerStatsForFormat = (playerStatsList, format) => {
@@ -258,6 +258,53 @@ export const Squad = () => {
   const visiblePlayers = showAll ? sortedPlayers : sortedPlayers.slice(0, 6)
   const hasMorePlayers = sortedPlayers.length > 6
 
+  // One definition per role filter, used to build both the table head and the
+  // body, so the two can't drift apart the way the old grid columns did.
+  const formatAvg = (player) =>
+    typeof player.batting_avg === 'number' && player.batting_avg > 0
+      ? player.batting_avg.toFixed(1)
+      : player.total_matches > 0
+        ? (player.total_runs / player.total_matches).toFixed(1)
+        : '0.0'
+
+  const COLUMNS = {
+    All: [
+      { key: 'runs', label: 'R', title: 'Runs', cell: (p) => p.total_runs || 0 },
+      { key: 'wickets', label: 'W', title: 'Wickets', cell: (p) => p.total_wickets || 0 },
+      { key: 'catches', label: 'C', title: 'Catches', cell: (p) => p.total_catches || 0 },
+      { key: 'points', label: 'Pts', title: 'Points', cell: calculatePoints, emphasis: true }
+    ],
+    Batsman: [
+      { key: 'matches', label: 'Mat', title: 'Matches', cell: (p) => p.total_matches || 0 },
+      { key: 'runs', label: 'Runs', title: 'Runs', cell: (p) => p.total_runs || 0 },
+      { key: 'batting_avg', label: 'Avg', title: 'Batting average', cell: formatAvg },
+      {
+        key: 'sr',
+        label: 'SR',
+        title: 'Strike rate',
+        cell: (p) => (getStrikeRate(p) > 0 ? getStrikeRate(p).toFixed(1) : '—')
+      }
+    ],
+    Bowler: [
+      { key: 'matches', label: 'Mat', title: 'Matches', cell: (p) => p.total_matches || 0 },
+      {
+        key: 'overs',
+        label: 'Ov',
+        title: 'Overs bowled',
+        cell: (p) => (getBowlingOvers(p) > 0 ? getBowlingOvers(p).toFixed(1) : '0.0')
+      },
+      { key: 'wickets', label: 'Wkts', title: 'Wickets', cell: (p) => p.total_wickets || 0 },
+      {
+        key: 'econ',
+        label: 'Econ',
+        title: 'Economy rate',
+        cell: (p) => (getBowlingEcon(p) > 0 ? getBowlingEcon(p).toFixed(2) : '—')
+      }
+    ]
+  }
+
+  const columns = COLUMNS[roleFilter] || COLUMNS.All
+
   return (
     <div className="page-squad">
       <Helmet>
@@ -267,8 +314,11 @@ export const Squad = () => {
       </Helmet>
 
       <main className="section-padding">
-        <div className="container text-center">
-          <h2 className="mb-4">Meet The Squad</h2>
+        <div className="container">
+          <div className="section-head">
+            <h1>The Squad</h1>
+            <span className="label">Verbandsliga · T20 &amp; 50 Overs</span>
+          </div>
 
           {/* Photo Carousel */}
           <div className="team-carousel">
@@ -350,200 +400,74 @@ export const Squad = () => {
                 ))}
               </div>
 
-              <div className={`rankings-table ${roleFilter === 'Batsman' ? 'batting-mode' : roleFilter === 'Bowler' ? 'bowling-mode' : ''}`}>
-                  {/* Table Header */}
-                  {roleFilter === 'All' && (
-                    <div className="rankings-table-header">
-                      <span className="header-col-pos">Pos</span>
-                      <span 
-                        className={`header-col-player sortable ${sortBy === 'name' ? 'active' : ''}`}
-                        onClick={() => handleSort('name')}
-                      >
+              <table className="scorecard">
+                <thead>
+                  <tr>
+                    <th scope="col" className="col-pos">#</th>
+                    <th
+                      scope="col"
+                      className={`col-player sortable ${sortBy === 'name' ? 'active' : ''}`}
+                      aria-sort={sortBy === 'name' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'}
+                    >
+                      <button type="button" onClick={() => handleSort('name')}>
                         Player
-                      </span>
-                      <span 
-                        className={`header-col-runs sortable ${sortBy === 'runs' ? 'active' : ''}`}
-                        onClick={() => handleSort('runs')}
+                        {sortBy === 'name' && <span className="sort-arrow">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
+                      </button>
+                    </th>
+                    {columns.map((col) => (
+                      <th
+                        key={col.key}
+                        scope="col"
+                        className={`sortable ${sortBy === col.key ? 'active' : ''}`}
+                        aria-sort={sortBy === col.key ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'}
                       >
-                        R
-                      </span>
-                      <span 
-                        className={`header-col-wickets sortable ${sortBy === 'wickets' ? 'active' : ''}`}
-                        onClick={() => handleSort('wickets')}
-                      >
-                        W
-                      </span>
-                      <span 
-                        className={`header-col-catches sortable ${sortBy === 'catches' ? 'active' : ''}`}
-                        onClick={() => handleSort('catches')}
-                      >
-                        C
-                      </span>
-                      <span 
-                        className={`header-col-points sortable ${sortBy === 'points' ? 'active' : ''}`}
-                        onClick={() => handleSort('points')}
-                      >
-                        Pts
-                        <span
-                          className={`points-info-trigger ${showTooltip ? 'active' : ''}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowTooltip(!showTooltip);
-                          }}
-                          style={{ marginLeft: '4px', verticalAlign: 'middle', display: 'inline-flex', position: 'relative' }}
-                        >
-                          <Info size={11} />
-                          <span className={`points-tooltip ${showTooltip ? 'visible' : ''}`} style={{ textTransform: 'none', fontWeight: 'normal' }}>
-                            Points = Runs + (Wickets × 20) + (Catches × 5)
+                        <button type="button" onClick={() => handleSort(col.key)} title={col.title}>
+                          {col.label}
+                          {sortBy === col.key && <span className="sort-arrow">{sortOrder === 'asc' ? '▲' : '▼'}</span>}
+                        </button>
+                        {col.key === 'points' && (
+                          <span
+                            className={`points-info-trigger ${showTooltip ? 'active' : ''}`}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setShowTooltip(!showTooltip)
+                            }}
+                          >
+                            <Info size={11} />
+                            <span className={`points-tooltip ${showTooltip ? 'visible' : ''}`}>
+                              Points = Runs + (Wickets × 20) + (Catches × 5)
+                            </span>
                           </span>
-                        </span>
-                      </span>
-                    </div>
-                  )}
-
-                  {roleFilter === 'Batsman' && (
-                    <div className="rankings-table-header">
-                      <span className="header-col-pos">Pos</span>
-                      <span 
-                        className={`header-col-player sortable ${sortBy === 'name' ? 'active' : ''}`}
-                        onClick={() => handleSort('name')}
-                      >
-                        Player
-                      </span>
-                      <span 
-                        className={`header-col-mat sortable ${sortBy === 'matches' ? 'active' : ''}`}
-                        onClick={() => handleSort('matches')}
-                      >
-                        Mat
-                      </span>
-                      <span 
-                        className={`header-col-runs sortable ${sortBy === 'runs' ? 'active' : ''}`}
-                        onClick={() => handleSort('runs')}
-                      >
-                        Runs
-                      </span>
-                      <span 
-                        className={`header-col-avg sortable ${sortBy === 'batting_avg' ? 'active' : ''}`}
-                        onClick={() => handleSort('batting_avg')}
-                      >
-                        Avg
-                      </span>
-                      <span 
-                        className={`header-col-sr sortable ${sortBy === 'sr' ? 'active' : ''}`}
-                        onClick={() => handleSort('sr')}
-                      >
-                        SR
-                      </span>
-                    </div>
-                  )}
-
-                  {roleFilter === 'Bowler' && (
-                    <div className="rankings-table-header">
-                      <span className="header-col-pos">Pos</span>
-                      <span 
-                        className={`header-col-player sortable ${sortBy === 'name' ? 'active' : ''}`}
-                        onClick={() => handleSort('name')}
-                      >
-                        Player
-                      </span>
-                      <span 
-                        className={`header-col-mat sortable ${sortBy === 'matches' ? 'active' : ''}`}
-                        onClick={() => handleSort('matches')}
-                      >
-                        Mat
-                      </span>
-                      <span 
-                        className={`header-col-overs sortable ${sortBy === 'overs' ? 'active' : ''}`}
-                        onClick={() => handleSort('overs')}
-                      >
-                        Overs
-                      </span>
-                      <span 
-                        className={`header-col-wickets sortable ${sortBy === 'wickets' ? 'active' : ''}`}
-                        onClick={() => handleSort('wickets')}
-                      >
-                        Wkts
-                      </span>
-                      <span 
-                        className={`header-col-econ sortable ${sortBy === 'econ' ? 'active' : ''}`}
-                        onClick={() => handleSort('econ')}
-                      >
-                        Econ
-                      </span>
-                    </div>
-                  )}
- 
-                  {/* Table Rows */}
-                  {visiblePlayers.map((player, index) => {
-                    const isTopPlayer = index === 0
-                    const role = getPreferredRole(player)
- 
-                    return (
-                      <div key={player.id} className={`rankings-row ${isTopPlayer ? 'top-player' : ''}`}>
-                        <div className="col-pos">
-                          <span className="pos-number">{String(index + 1).padStart(2, '0')}</span>
-                        </div>
-                        
-                        <div className="col-player">
-                          <h3 className="player-name-container">{player.name}</h3>
-                          <span className="player-role-subtext">{role}</span>
-                        </div>
- 
-                        {roleFilter === 'All' && (
-                          <>
-                            <span className="col-runs">{player.total_runs || 0}</span>
-                            <span className="col-wickets">{player.total_wickets || 0}</span>
-                            <span className="col-catches">{player.total_catches || 0}</span>
-                            <div className="col-points">
-                              <div className={`pts-badge ${isTopPlayer ? 'top' : 'other'}`}>
-                                <span>{calculatePoints(player)}</span>
-                              </div>
-                            </div>
-                          </>
                         )}
-
-                        {roleFilter === 'Batsman' && (
-                          <>
-                            <span className="col-mat">{player.total_matches || 0}</span>
-                            <span className="col-runs">{player.total_runs || 0}</span>
-                            <span className="col-avg">
-                              {typeof player.batting_avg === 'number' && player.batting_avg > 0 ? player.batting_avg.toFixed(1) : (player.total_matches > 0 ? (player.total_runs / player.total_matches).toFixed(1) : '0.0')}
-                            </span>
-                            <span className="col-sr">
-                              {getStrikeRate(player) > 0 ? getStrikeRate(player).toFixed(1) : '-'}
-                            </span>
-                          </>
-                        )}
-
-                        {roleFilter === 'Bowler' && (
-                          <>
-                            <span className="col-mat">{player.total_matches || 0}</span>
-                            <span className="col-overs">
-                              {getBowlingOvers(player) > 0 ? getBowlingOvers(player).toFixed(1) : '0.0'}
-                            </span>
-                            <span className="col-wickets">{player.total_wickets || 0}</span>
-                            <span className="col-econ">
-                              {getBowlingEcon(player) > 0 ? getBowlingEcon(player).toFixed(2) : '-'}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    )
-                  })}
-              </div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {visiblePlayers.map((player, index) => (
+                    <tr key={player.id} className={index === 0 ? 'top-player' : ''}>
+                      <td className="col-pos">{index + 1}</td>
+                      <td className="col-player">
+                        <span className="player-name-container">{player.name}</span>
+                        <span className="player-role-subtext">{getPreferredRole(player)}</span>
+                      </td>
+                      {columns.map((col) => (
+                        <td key={col.key} className={col.emphasis ? 'col-points' : undefined}>
+                          {col.cell(player)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
  
               {hasMorePlayers && (
-                <div style={{ padding: '0', margin: '24px 0 32px 0' }}>
-                  <button 
-                    className="view-full-leaderboard-btn" 
-                    onClick={() => setShowAll(!showAll)}
-                  >
-                    <span>{showAll ? 'SHOW LESS' : 'VIEW FULL LEADERBOARD'}</span>
-                    <span className="chevron-icon" style={{ display: 'inline-flex', alignItems: 'center', marginLeft: '8px' }}>
-                      {showAll ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                    </span>
-                  </button>
-                </div>
+                <button
+                  className="view-full-leaderboard-btn"
+                  onClick={() => setShowAll(!showAll)}
+                >
+                  {showAll ? 'Show less' : `Show all ${sortedPlayers.length} players`}
+                </button>
               )}
 
               {lastUpdated && (

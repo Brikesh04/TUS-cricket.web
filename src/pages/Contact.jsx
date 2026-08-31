@@ -13,14 +13,14 @@ export const Contact = () => {
 
       <main className="section-padding">
         <div className="container">
-          <div className="text-center mb-5">
-            <h1 className="mb-2">Get In Touch</h1>
+          <div className="section-head">
+            <h1>Get In Touch</h1>
             <p>Questions? Friendly matches? We'd love to hear from you.</p>
           </div>
 
           <div className="contact-grid">
             {/* Email Card */}
-            <div className="glass shadow-md contact-card">
+            <div className="contact-card">
               <div className="contact-card-icon">
                 <Mail size={40} strokeWidth={1.5} />
               </div>
@@ -32,7 +32,7 @@ export const Contact = () => {
             </div>
 
             {/* Visit Card */}
-            <div className="glass shadow-md contact-card">
+            <div className="contact-card">
               <div className="contact-card-icon">
                 <MapPin size={40} strokeWidth={1.5} />
               </div>
@@ -50,7 +50,7 @@ export const Contact = () => {
           </div>
 
           {/* Embedded Google Map */}
-          <div id="location-map" className="glass shadow-lg contact-map">
+          <div id="location-map" className="contact-map">
             <iframe 
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2647.606915640246!2d12.933402175822946!3d48.425690431060374!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4775b17317668aa9%3A0x453353125ac9a1c0!2sPeter-Adam-Stra%C3%9Fe%2052%2C%2084347%20Pfarrkirchen!5e0!3m2!1sen!2sde!4v1769038923194!5m2!1sen!2sde" 
               width="100%" 

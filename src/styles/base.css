@@ -1,0 +1,257 @@
+/* ============================================================
+   Reset, base typography, layout primitives
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--paper);
+  color: var(--ink);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-synthesis-weight: none;
+}
+
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Headings ------------------------------------------------------
+   Serif, normal tracking. The old system used -0.02em on everything,
+   which is a sans-serif habit and looks cramped on a serif. */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+h1 { font-size: clamp(2rem, 4.5vw, 3rem); }
+h2 { font-size: clamp(1.5rem, 3vw, 2rem); }
+h3 { font-size: 1.25rem; }
+h4 { font-size: 1.0625rem; }
+
+p {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--ink-muted);
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Every figure in this design is a figure of record — align them. */
+table,
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+::selection {
+  background: var(--club-gold);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--club-blue);
+  outline-offset: 2px;
+}
+
+/* --- Layout --------------------------------------------------------  */
+
+.container {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 var(--space-5);
+}
+
+.container--narrow {
+  max-width: 760px;
+}
+
+.section-padding {
+  padding: var(--space-9) 0;
+}
+
+/* --- Shared editorial primitives ----------------------------------- */
+
+/* Letterspaced uppercase label — the workhorse of this design. */
+.label {
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* Section head: label, then a heavy rule. */
+.section-head {
+  border-bottom: 2px solid var(--rule-heavy);
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-6);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.section-head h1,
+.section-head h2 {
+  margin: 0;
+}
+
+.prose {
+  max-width: var(--measure);
+}
+
+.prose p {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--ink-muted);
+}
+
+.prose p + p {
+  margin-top: var(--space-4);
+}
+
+.rule {
+  border: 0;
+  border-top: 1px solid var(--rule);
+}
+
+/* --- Links in prose ------------------------------------------------ */
+.prose a,
+.text-link {
+  color: var(--club-blue-deep);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: 1px;
+  transition: color var(--transition-fast);
+}
+
+.prose a:hover,
+.text-link:hover {
+  color: var(--ink);
+}
+
+/* --- Buttons -------------------------------------------------------
+   Square, ruled, no shadow, no pill. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 12px 24px;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.btn:hover {
+  background: var(--club-blue-deep);
+  border-color: var(--club-blue-deep);
+  color: var(--paper);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--rule-mid);
+}
+
+.btn-secondary:hover {
+  background: transparent;
+  color: var(--club-blue-deep);
+  border-color: var(--club-blue-deep);
+}
+
+.btn-large {
+  padding: 16px 32px;
+  font-size: 0.8125rem;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* --- Motion --------------------------------------------------------
+   Restrained: a short fade, no bobbing, no wipes. */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+.fade-in {
+  animation: fadeUp .5s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* --- Utilities kept for compatibility ------------------------------ */
+.text-center { text-align: center; }
+.mb-1 { margin-bottom: var(--space-2); }
+.mb-2 { margin-bottom: var(--space-3); }
+.mb-4 { margin-bottom: var(--space-6); }
+.mb-5 { margin-bottom: var(--space-7); }
+
+@media (max-width: 768px) {
+  .section-padding { padding: var(--space-7) 0; }
+  .container { padding: 0 var(--space-4); }
+  .hide-mobile { display: none; }
+}

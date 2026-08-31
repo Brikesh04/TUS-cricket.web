@@ -4,8 +4,8 @@
     "description": "Official cricket department of TuS 1860 Pfarrkirchen e.V.",
     "start_url": "/",
     "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#0071E3",
+    "background_color": "#FBFAF6",
+    "theme_color": "#134493",
     "icons": [
         {
             "src": "/favicon-192x192.png",

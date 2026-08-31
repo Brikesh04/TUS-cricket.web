@@ -10,7 +10,7 @@ export const Privacy = () => {
       </Helmet>
 
       <main className="section-padding">
-        <div className="container" style={{ maxWidth: '800px' }}>
+        <div className="container container--narrow">
           <h1 className="mb-4">Datenschutzerklärung</h1>
 
           <section className="mb-4">

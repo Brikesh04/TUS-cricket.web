@@ -172,22 +172,21 @@ export const JoinUs = () => {
       </Helmet>
 
       <main className="section-padding">
-        <div className="container">
-          <div className="text-center reveal join-header">
-            <h1 className="mb-2 join-title">
-              Join the Squad
-            </h1>
-            <p className="join-subtitle">
-              Take your game to the next level with TUS Cricket Club.
-            </p>
-            <div className="fade-in delay-1 join-free-badge">
-              ✨ First session is completely FREE!
-            </div>
+        <div className="container container--narrow">
+          <div className="section-head">
+            <h1>Join the Squad</h1>
+            <span className="label">First session free</span>
           </div>
 
-          <div className="reveal delay-2 join-form-wrapper">
-            <JoinForm />
+          <div className="prose mb-4">
+            <p>
+              Take your game to the next level with TuS Cricket Pfarrkirchen. Beginners
+              and experienced players are equally welcome — tell us a little about
+              yourself and we&rsquo;ll be in touch with training times.
+            </p>
           </div>
+
+          <JoinForm />
         </div>
       </main>
     </div>

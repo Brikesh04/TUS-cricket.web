@@ -1,0 +1,105 @@
+/* ============================================================
+   Design tokens — TuS Cricket Pfarrkirchen
+   Direction: cricket almanac / scorecard. Ink on paper, hairline
+   rules, tabular figures, minimal colour.
+   ============================================================ */
+
+:root {
+  /* --- Paper & ink -------------------------------------------------
+     Never pure #FFF/#000: the warm off-white reads as printed stock. */
+  --paper: #FBFAF6;
+  --paper-sunk: #F3F1EA;   /* inset panels, sunk table headers */
+  --paper-edge: #EFECE1;   /* the band behind the skyline plate */
+
+  --ink: #16150F;          /* warm near-black — body text, heavy rules */
+  --ink-muted: #57544A;    /* secondary prose */
+  --ink-faint: #8A8779;    /* captions, labels, disabled */
+
+  /* --- Rules -------------------------------------------------------
+     Structure comes from rules, not shadows. */
+  --rule: #DCD8C9;         /* hairline between rows */
+  --rule-mid: #B8B3A1;     /* section separators */
+  --rule-heavy: var(--ink);/* under section heads and table heads */
+
+  /* --- Club colours ------------------------------------------------
+     Sampled directly from public/logo.png (the TuS 1860 crest),
+     not chosen by eye. Used sparingly — this is an ink-on-paper
+     design, colour is an accent, never a surface. */
+  --club-blue: #134493;    /* crest banner + Bavarian diamonds */
+  --club-gold: #F2D902;    /* crest crown + "TuS 1860" lettering */
+  --club-red: #E1011B;     /* crest lion — top-rank marker only */
+
+  --club-blue-deep: #0D2F68;  /* darkened for text on paper (AA) */
+  --club-red-deep: #A80115;   /* darkened for text on paper (AA) */
+
+  /* --- Type --------------------------------------------------------
+     Two families. Serif carries display and figures of record;
+     Inter carries UI and data, with tabular numerals. */
+  --font-display: "Source Serif 4", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  --tracking-label: 0.08em;  /* letterspaced uppercase labels */
+  --tracking-wide: 0.18em;   /* masthead + skyline lettering */
+
+  /* --- Measure -----------------------------------------------------  */
+  --measure: 62ch;         /* prose column */
+
+  /* --- Space -------------------------------------------------------
+     4px base, linear-ish ramp (the old scale jumped 8→12→20). */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --space-10: 128px;
+
+  --transition-fast: .18s cubic-bezier(.4, 0, .2, 1);
+
+  /* ==================================================================
+     LEGACY TOKENS — DO NOT REMOVE
+     styles/admin.css still references these. The admin UI was out of
+     scope for the redesign, so the values stay exactly as they were
+     to keep it rendering unchanged. Public styles must not use them.
+     ================================================================== */
+  --color-bg: #FFFFFF;
+  --color-bg-secondary: #F5F5F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #86868B;
+  --color-primary: #0071E3;
+  --color-primary-hover: #0077ED;
+  --color-primary-dark: #0F766E;
+  --color-accent: #0D9488;
+
+  --glass-bg: rgba(255, 255, 255, .72);
+  --glass-border: rgba(255, 255, 255, .3);
+  --glass-blur: 20px;
+
+  --font-main: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  --spacing-unit: 8px;
+  --spacing-xs: calc(var(--spacing-unit) * 1);
+  --spacing-sm: calc(var(--spacing-unit) * 2);
+  --spacing-md: calc(var(--spacing-unit) * 4);
+  --spacing-lg: calc(var(--spacing-unit) * 8);
+  --spacing-xl: calc(var(--spacing-unit) * 12);
+  --spacing-xxl: calc(var(--spacing-unit) * 20);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, .04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, .08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, .12);
+  --shadow-xl: 0 12px 48px rgba(0, 0, 0, .16);
+
+  --transition-normal: .4s cubic-bezier(.4, 0, .2, 1);
+
+  --ease-out-spring: cubic-bezier(.175, .885, .32, 1.275);
+  --ease-out-expo: cubic-bezier(.16, 1, .3, 1);
+}
