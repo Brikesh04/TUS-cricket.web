@@ -93,6 +93,16 @@ Inside the `/admin` dashboard under **Import CSV Stats**:
 ### 3. Serverless Netlify Function
 The admin dashboard features a "Sync Stats Now" option that triggers a POST request to `/.netlify/functions/trigger-stats-update` for automated synchronizations in production. The request must carry the logged-in admin's Supabase session as an `Authorization: Bearer <access_token>` header — the function verifies it via `supabase.auth.getUser()` before scraping or writing anything, so the endpoint can't be triggered by an anonymous caller. Writes then use `SUPABASE_SERVICE_ROLE_KEY` (falling back to the anon key if unset) so they aren't blocked by the RLS write policies below.
 
+The actual scrape-and-sync logic (fetching each CricClubs stats page, parsing the table, matching names, writing to Supabase) lives in `netlify/functions/lib/statsSync.js` as `runStatsSync()`, shared by this function and the scheduled sync below — there's one implementation to fix or extend, not two.
+
+### 4. Automatic Weekly Sync
+`netlify/functions/scheduled-stats-sync.js` is a [Netlify Scheduled Function](https://docs.netlify.com/build/functions/scheduled-functions/) that calls the same `runStatsSync()` on its own — no admin has to click anything. It runs every Sunday at 00:00 UTC (`export const config = { schedule: '@weekly' }`); edit that cron expression to change the cadence. Scheduled functions can't be invoked over public HTTP by anyone else — only Netlify's own scheduler (or the "Run now" button on the function's page in the Netlify dashboard, useful for testing) can trigger it — so it needs no session/auth check of its own, unlike the button-triggered function above.
+
+**Required environment variables** (Netlify site dashboard → Site configuration → Environment variables — not `.env`, since these are read server-side by the function, not bundled into the client):
+- At least one of `CRICCLUBS_T20_BATTING_URL`, `CRICCLUBS_T20_BOWLING_URL`, `CRICCLUBS_T20_FIELDING_URL`, `CRICCLUBS_FIFTY_BATTING_URL`, `CRICCLUBS_FIFTY_BOWLING_URL`, `CRICCLUBS_FIFTY_FIELDING_URL` — each is the URL of the corresponding CricClubs stats page for the team. Unlike the bookmarklet (which scrapes whatever page is open in your browser), the scheduled/button-triggered sync has no browser, so without these it has nothing to scrape and simply reports "No CricClubs URLs configured."
+- `SUPABASE_SERVICE_ROLE_KEY` — required so both sync paths can write despite the RLS write policies below.
+- Optional `CRICCLUBS_SEASON` to pin the season instead of relying on the date-based default.
+
 ---
 
 ## 💻 Getting Started
