@@ -1,4 +1,4 @@
-import cheerio from 'cheerio'
+import { load as loadHtml } from 'cheerio'
 import { createClient } from '@supabase/supabase-js'
 
 export const handler = async (event, context) => {
@@ -35,9 +35,10 @@ export const handler = async (event, context) => {
 
   // 1. Initialize Supabase Client
   const supabaseUrl = process.env.VITE_SUPABASE_URL
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
+  const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-  if (!supabaseUrl || !supabaseKey) {
+  if (!supabaseUrl || !supabaseAnonKey) {
     return {
       statusCode: 500,
       headers: {
@@ -46,12 +47,57 @@ export const handler = async (event, context) => {
       },
       body: JSON.stringify({
         success: false,
-        error: 'Supabase environment variables (VITE_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY or VITE_SUPABASE_ANON_KEY) are not configured.'
+        error: 'Supabase environment variables (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY) are not configured.'
       })
     }
   }
 
-  const supabase = createClient(supabaseUrl, supabaseKey)
+  // 1b. Require a valid logged-in admin session. Without this, this endpoint
+  // would let anyone on the internet trigger scrapes and DB writes.
+  const authHeader = event.headers.authorization || event.headers.Authorization
+  const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
+
+  if (!token) {
+    return {
+      statusCode: 401,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ success: false, error: 'Missing Authorization header. Please sign in as an admin and try again.' })
+    }
+  }
+
+  try {
+    const authClient = createClient(supabaseUrl, supabaseAnonKey)
+    const { data: authData, error: authError } = await authClient.auth.getUser(token)
+
+    if (authError || !authData?.user) {
+      return {
+        statusCode: 401,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ success: false, error: 'Invalid or expired session. Please sign in again.' })
+      }
+    }
+  } catch (err) {
+    return {
+      statusCode: 401,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ success: false, error: `Could not verify session: ${err.message}` })
+    }
+  }
+
+  // Writes use the service role key so they aren't blocked by the RLS
+  // policies that restrict INSERT/UPDATE/DELETE to authenticated sessions
+  // (see supabase/migrations). Falling back to the anon key here only works
+  // if those policies are absent or looser than recommended.
+  const supabase = createClient(supabaseUrl, supabaseServiceKey || supabaseAnonKey)
 
   // 2. Determine target season
   // Check CRICCLUBS_SEASON env, then fall back to dynamic date-based matching
@@ -147,7 +193,7 @@ export const handler = async (event, context) => {
         }
 
         const html = await response.text()
-        const $ = cheerio.load(html)
+        const $ = loadHtml(html)
 
         // Locate main statistics table by scoring table structures
         let tableElement = null

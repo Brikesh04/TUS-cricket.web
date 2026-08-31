@@ -79,10 +79,10 @@ TuS_website/
 To bridge the gap between match statistics tracked on **CricClubs** and the website's squad page, the project supports three data import avenues:
 
 ### 1. Browser Bookmarklet (`bookmarklet.js`)
-An administrative utility designed to run inside the browser. 
-1. Open CricClubs stats page (Batting, Bowling, or Fielding stats table view).
-2. Run the minified bookmarklet code (found in `bookmarklet_minified.txt`) via browser address bar or bookmarks menu.
-3. The bookmarklet scrapes the active HTML tables, translates names against the Supabase `mappings` table, and patches/inserts the statistics directly to Supabase.
+An administrative utility designed to run inside the browser. `bookmarklet.js` is the single source of truth for its logic (with `__SUPABASE_URL__` / `__SUPABASE_ANON_KEY__` placeholders); the admin dashboard's "Alternate Sync" panel imports it at build time (`?raw`) and injects the live Supabase config to produce both the drag-to-bookmark link and the "copy code" button, so there's only one copy of the scraping logic to maintain.
+1. From `/admin` → **Name Mappings**, drag the "Sync to TuS Website" button to your bookmarks bar, or use "Copy Bookmarklet Code" to add it manually.
+2. Open a CricClubs stats page (Batting, Bowling, or Fielding stats table view).
+3. Run the bookmarklet from your bookmarks bar. The bookmarklet scrapes the active HTML table, translates names against the Supabase `mappings` table, and patches/inserts the statistics directly to Supabase.
 
 ### 2. Administrative CSV Upload
 Inside the `/admin` dashboard under **Import CSV Stats**:
@@ -91,7 +91,7 @@ Inside the `/admin` dashboard under **Import CSV Stats**:
 3. Upload the CSV. The importer will auto-detect columns, display a preview, flag any name mismatches, and override the statistics database.
 
 ### 3. Serverless Netlify Function
-The admin dashboard features a "Sync Stats Now" option that triggers a POST request to `/.netlify/functions/trigger-stats-update` for automated synchronizations in production.
+The admin dashboard features a "Sync Stats Now" option that triggers a POST request to `/.netlify/functions/trigger-stats-update` for automated synchronizations in production. The request must carry the logged-in admin's Supabase session as an `Authorization: Bearer <access_token>` header — the function verifies it via `supabase.auth.getUser()` before scraping or writing anything, so the endpoint can't be triggered by an anonymous caller. Writes then use `SUPABASE_SERVICE_ROLE_KEY` (falling back to the anon key if unset) so they aren't blocked by the RLS write policies below.
 
 ---
 
@@ -185,4 +185,6 @@ Because the client uses the public anonymous key (`anon`) to read player statist
 
 > [!IMPORTANT]
 > If you enforce RLS policies that restrict write operations to authenticated sessions, direct bookmarklet updates using the anon key will be blocked. In this setup, administrators must use the **CSV Importer** from the logged-in `/admin` dashboard or trigger syncs via a secure serverless function that uses service role privileges.
+
+A ready-to-run migration implementing exactly this policy set lives in [`supabase/migrations/20260831000000_rls_policies.sql`](./supabase/migrations/20260831000000_rls_policies.sql) — apply it via the Supabase SQL editor or `supabase db push`. It has not been applied automatically; nothing in this repo can enforce RLS on your live project without you running it.
 

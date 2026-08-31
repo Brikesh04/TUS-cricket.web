@@ -1,7 +1,7 @@
 javascript:(async function(){
   try {
-    const S_URL="https://dhobrltnetugebkcqgzi.supabase.co";
-    const S_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRob2JybHRuZXR1Z2Via2NxZ3ppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwNjMzOTYsImV4cCI6MjA4NTYzOTM5Nn0.kTJLI7TzyiPi0QJ4KGNLhTpq1E8lbzo8h8xLE1NtKy8";
+    const S_URL="__SUPABASE_URL__";
+    const S_KEY="__SUPABASE_ANON_KEY__";
     const headers={"apikey":S_KEY,"Authorization":"Bearer "+S_KEY,"Content-Type":"application/json"};
     const url=window.location.href;
     
@@ -225,10 +225,17 @@ javascript:(async function(){
         let changed=false;
         if(type==="Batting"&&ghostUpdate.runs!==0){
           ghostUpdate.runs=0;
+          ghostUpdate.balls_faced=0;
+          ghostUpdate.batting_avg=0;
+          ghostUpdate.strike_rate=0;
           changed=true;
         }
         if(type==="Bowling"&&ghostUpdate.wickets!==0){
           ghostUpdate.wickets=0;
+          ghostUpdate.overs=0;
+          ghostUpdate.runs_conceded=0;
+          ghostUpdate.economy=0;
+          ghostUpdate.bowling_avg=0;
           changed=true;
         }
         if(type==="Fielding"&&ghostUpdate.catches!==0){
