@@ -91,7 +91,7 @@ Inside the `/admin` dashboard under **Import CSV Stats**:
 3. Upload the CSV. The importer will auto-detect columns, display a preview, flag any name mismatches, and override the statistics database.
 
 ### 3. Serverless Netlify Function
-The admin dashboard features a "Sync Stats Now" option that triggers a POST request to `/.netlify/functions/trigger-stats-update` for automated synchronizations in production. The request must carry the logged-in admin's Supabase session as an `Authorization: Bearer <access_token>` header — the function verifies it via `supabase.auth.getUser()` before scraping or writing anything, so the endpoint can't be triggered by an anonymous caller. Writes then use `SUPABASE_SERVICE_ROLE_KEY` (falling back to the anon key if unset) so they aren't blocked by the RLS write policies below.
+The admin dashboard features a "Sync Stats Now" option that triggers a POST request to `/.netlify/functions/trigger-stats-update` for automated synchronizations in production. The request must carry the logged-in admin's Supabase session as an `Authorization: Bearer <access_token>` header — the function verifies it via `supabase.auth.getUser()` before scraping or writing anything, so the endpoint can't be triggered by an anonymous caller. Writes then use `SUPABASE_SERVICE_ROLE_KEY` so they aren't blocked by the RLS write policies below. The code falls back to the anon key if that variable is unset, but since the anonymous write policies were dropped that fallback will now fail — the key is effectively required.
 
 The actual scrape-and-sync logic (fetching each CricClubs stats page, parsing the table, matching names, writing to Supabase) lives in `netlify/functions/lib/statsSync.js` as `runStatsSync()`, shared by this function and the scheduled sync below — there's one implementation to fix or extend, not two.
 
@@ -177,9 +177,14 @@ Below are the default tables required in your Supabase database instance to back
 
 ## 🔒 Row Level Security (RLS) Configuration in Supabase
 
-Because the client uses the public anonymous key (`anon`) to read player statistics, it is **highly recommended** to configure proper **Row Level Security (RLS)** in the Supabase Dashboard. This prevents unauthorized users from modifying your website database.
+Because the client uses the public anonymous key (`anon`) to read player statistics, **Row Level Security (RLS)** is what actually prevents unauthorized users from modifying the database — the admin dashboard's `AuthGuard` only hides UI, it enforces nothing.
 
-### Recommended RLS Policies
+RLS is enabled on `squad`, `player_stats`, `mappings`, and `seasons`, and the access model below is live as of 2026-08-31.
+
+> [!WARNING]
+> Adding policies does **not** restrict access. Postgres RLS policies are *permissive* — they OR together, so one open policy grants access regardless of how many stricter policies sit beside it. Closing a hole means **dropping** the offending policy, which is what `supabase/migrations/20260831012527_drop_anon_write_policies.sql` does.
+
+### Access model
 
 1. **`squad` Table**:
    - **SELECT**: Enable for `anon` (public read-only access).
@@ -194,7 +199,18 @@ Because the client uses the public anonymous key (`anon`) to read player statist
    - **INSERT, UPDATE, DELETE**: Restrict to authenticated users.
 
 > [!IMPORTANT]
-> If you enforce RLS policies that restrict write operations to authenticated sessions, direct bookmarklet updates using the anon key will be blocked. In this setup, administrators must use the **CSV Importer** from the logged-in `/admin` dashboard or trigger syncs via a secure serverless function that uses service role privileges.
+> **The browser bookmarklet no longer works for writing stats.** It authenticated with the anon key, which relied on the open anonymous INSERT/UPDATE policies that were dropped on 2026-08-31. Anonymous write access cannot be secured with a key that ships in the public JS bundle, so it was removed in favour of the paths below. `bookmarklet.js` is retained for reference only.
 
-A ready-to-run migration implementing exactly this policy set lives in [`supabase/migrations/20260831000000_rls_policies.sql`](./supabase/migrations/20260831000000_rls_policies.sql) — apply it via the Supabase SQL editor or `supabase db push`. It has not been applied automatically; nothing in this repo can enforce RLS on your live project without you running it.
+Write paths that work under this model:
+
+| Path | Credential | Works |
+|---|---|---|
+| Admin dashboard CRUD (`/admin`) | Logged-in admin session (`authenticated`) | ✅ |
+| CSV Importer | Logged-in admin session (`authenticated`) | ✅ |
+| "Sync Stats Now" button | `SUPABASE_SERVICE_ROLE_KEY` (bypasses RLS) | ✅ |
+| Weekly scheduled sync | `SUPABASE_SERVICE_ROLE_KEY` (bypasses RLS) | ✅ |
+| Public squad page reads | anon key + public SELECT policies | ✅ |
+| Browser bookmarklet | anon key | ❌ removed |
+
+Because both sync paths depend on it, `SUPABASE_SERVICE_ROLE_KEY` **must** be set in Netlify. The sync functions fall back to the anon key when it's missing, and that fallback is now blocked by RLS — so an unset key means the sync silently stops writing.
 
