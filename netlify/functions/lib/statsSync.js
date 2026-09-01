@@ -186,6 +186,7 @@ export const runStatsSync = async () => {
         if (nameIdx === -1) nameIdx = 1
 
         let scrapedCount = 0
+        let rejectedThisTask = 0
         for (let i = headerRowIdx + 1; i < rowElements.length; i++) {
           const tds = $(rowElements[i]).children()
           if (tds.length < 4) continue
@@ -198,11 +199,12 @@ export const runStatsSync = async () => {
             .trim()
           if (!cleanPlayerName || cleanPlayerName.includes('Extras') || cleanPlayerName.includes('Total') || cleanPlayerName.includes('Did not bat')) continue
 
-          // A single all-caps token is a misread cell, not a player. Writing
-          // these produced the orphaned "KANNAJI"/"PURAYIL" rows that can
-          // never match a squad member. Report them instead of storing them.
+          // An all-caps value is a misread cell, not a player. Writing these
+          // produced the orphaned "KANNAJI"/"PURAYIL" rows that can never
+          // match a squad member. Report them instead of storing them.
           if (isLikelyNameFragment(cleanPlayerName)) {
             rejectedNames.add(cleanPlayerName)
+            rejectedThisTask++
             continue
           }
 
@@ -265,6 +267,18 @@ export const runStatsSync = async () => {
 
             record.catches = outfieldCatches + wkCatches + stumpings + runOuts
           }
+        }
+
+        // If more rows were rejected than accepted, the name column was almost
+        // certainly misidentified. Fail the task rather than accept a near-empty
+        // result: leaving scrapedCategories false is what stops the ghost-record
+        // pass below from reading the absence as "nobody played" and zeroing
+        // every player's stats for this format.
+        if (rejectedThisTask > scrapedCount) {
+          throw new Error(
+            `rejected ${rejectedThisTask} of ${rejectedThisTask + scrapedCount} names ` +
+            `as unparseable — the name column looks misidentified, refusing to write`
+          )
         }
 
         diagnostics[task.diagKey[0]][task.diagKey[1]] = scrapedCount

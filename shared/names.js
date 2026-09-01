@@ -19,13 +19,20 @@ export const normalizeName = (name) =>
 
 /**
  * True for values that are almost certainly a misread cell rather than a
- * player: a single all-caps token such as "KANNAJI", "PURAYIL" or "DWIVEDI".
- * A real single-word name ("Pronoy") has lower case and is left alone.
+ * player: names with no lowercase at all — "KANNAJI", "PURAYIL", "DWIVEDI",
+ * "KRISHNA KANNAJI" — each a trailing fragment of a real squad name that the
+ * column heuristic clipped. Genuine entries are mixed case, so "Pronoy" and
+ * "Anil Tiwari" pass.
+ *
+ * If CricClubs ever rendered a table entirely in capitals this would reject
+ * every row, so callers must treat "rejected outnumber accepted" as a FAILED
+ * scrape rather than an empty one. Otherwise the ghost-record pass reads the
+ * absence as "nobody played" and zeroes everyone. runStatsSync does exactly
+ * that, and reports rejected names rather than dropping them silently.
  */
 export const isLikelyNameFragment = (name) => {
   const clean = String(name ?? '').replace(/ /g, ' ').replace(/\s+/g, ' ').trim()
   if (!clean) return true
-  const singleToken = !clean.includes(' ')
-  const hasNoLowercase = clean === clean.toUpperCase()
-  return singleToken && hasNoLowercase
+  // No lowercase anywhere. Real entries in this feed are mixed case.
+  return !/[a-z]/.test(clean)
 }
