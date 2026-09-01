@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Admin surfaces carry noindex meta tags already; keep crawlers out entirely.
+Disallow: /admin
+Disallow: /success
+
+Sitemap: https://tus-cricket-pfarrkirchen.de/sitemap.xml

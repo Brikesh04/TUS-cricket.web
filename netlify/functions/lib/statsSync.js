@@ -1,5 +1,6 @@
 import { load as loadHtml } from 'cheerio'
 import { createClient } from '@supabase/supabase-js'
+import { normalizeName, isLikelyNameFragment } from '../../../shared/names.js'
 
 // The CricClubs scrape-and-sync logic, shared by the admin-triggered
 // endpoint (netlify/functions/trigger-stats-update.js) and the automatic
@@ -7,6 +8,7 @@ import { createClient } from '@supabase/supabase-js'
 // place to fix bugs or adjust the parsing heuristics.
 export const runStatsSync = async () => {
   const errors = []
+  const rejectedNames = new Set()
   const diagnostics = {
     t20: { batting: 0, bowling: 0, fielding: 0 },
     fifty: { batting: 0, bowling: 0, fielding: 0 }
@@ -58,8 +60,13 @@ export const runStatsSync = async () => {
     const mappings = mappingsRes.data || []
     const existingStats = existingRes.data || []
 
+    // Every name comparison goes through this. CricClubs cells arrive with
+    // stray tabs, non-breaking spaces and doubled spaces, so comparing raw
+    // strings silently fails to match — that is how rows like
+    // "Vamsi Krishna   Kannaji" ended up orphaned from their mapping.
     const getMappedName = (name) => {
-      const m = mappings.find(x => x.source_name.toLowerCase() === name.toLowerCase())
+      const key = normalizeName(name)
+      const m = mappings.find(x => normalizeName(x.source_name) === key)
       return m ? m.target_name : name
     }
 
@@ -184,8 +191,20 @@ export const runStatsSync = async () => {
           if (tds.length < 4) continue
 
           const rawPlayerName = $(tds[nameIdx]).text().trim()
-          const cleanPlayerName = rawPlayerName.replace(/\(c\)|\(wk\)|\*|\†/gi, '').replace(/\s+/g, ' ').trim()
+          const cleanPlayerName = rawPlayerName
+            .replace(/\(c\)|\(wk\)|\*|\†/gi, '')
+            .replace(/ /g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
           if (!cleanPlayerName || cleanPlayerName.includes('Extras') || cleanPlayerName.includes('Total') || cleanPlayerName.includes('Did not bat')) continue
+
+          // A single all-caps token is a misread cell, not a player. Writing
+          // these produced the orphaned "KANNAJI"/"PURAYIL" rows that can
+          // never match a squad member. Report them instead of storing them.
+          if (isLikelyNameFragment(cleanPlayerName)) {
+            rejectedNames.add(cleanPlayerName)
+            continue
+          }
 
           scrapedCount++
           const targetName = getMappedName(cleanPlayerName)
@@ -270,7 +289,11 @@ export const runStatsSync = async () => {
     // Attach existing IDs to updated records
     for (const key of Object.keys(statsByPlayerFormat)) {
       const rec = statsByPlayerFormat[key]
-      const existing = existingStats.find(s => s.player_name === rec.player_name && s.format === rec.format)
+      // Normalized match: an existing row stored with stray whitespace would
+      // otherwise miss here and be re-inserted as a duplicate.
+      const existing = existingStats.find(
+        s => normalizeName(s.player_name) === normalizeName(rec.player_name) && s.format === rec.format
+      )
       if (existing) {
         rec.id = existing.id
       }
@@ -278,10 +301,15 @@ export const runStatsSync = async () => {
       finalPayloads.push(rec)
     }
 
-    // Handle ghost records (in DB but missing from scraped pages, reset corresponding category stats to 0)
+    // Handle ghost records (in DB but missing from scraped pages, reset corresponding category stats to 0).
+    // Matched on normalized names: a raw comparison would treat a stored name
+    // with stray whitespace as absent from the scrape and wrongly zero it.
+    const scrapedKeys = new Set(
+      Object.values(statsByPlayerFormat).map(r => `${r.format}_${normalizeName(r.player_name)}`)
+    )
     for (const existing of existingStats) {
-      const key = `${existing.format}_${existing.player_name}`
-      if (!statsByPlayerFormat[key]) {
+      const key = `${existing.format}_${normalizeName(existing.player_name)}`
+      if (!scrapedKeys.has(key)) {
         let changed = false
         const ghostRecord = { ...existing }
 
@@ -329,13 +357,20 @@ export const runStatsSync = async () => {
       if (updateError) throw new Error(`Update failed for ${payload.player_name}: ${updateError.message}`)
     }
 
-    const uniquePlayersScraped = new Set(finalPayloads.map(p => p.player_name))
+    const uniquePlayersScraped = new Set(finalPayloads.map(p => normalizeName(p.player_name)))
+
+    if (rejectedNames.size > 0) {
+      errors.push(
+        `Skipped ${rejectedNames.size} unparseable name(s): ${[...rejectedNames].join(', ')}`
+      )
+    }
 
     return {
       success: true,
       statusCode: 200,
       playersUpdated: finalPayloads.length,
       totalFound: uniquePlayersScraped.size,
+      rejectedNames: [...rejectedNames],
       diagnostics,
       errors
     }

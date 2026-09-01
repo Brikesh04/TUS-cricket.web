@@ -1,7 +1,15 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import Helmet from '../components/Helmet'
 
 export const Impressum = () => {
+
+  // These pages are entirely in German while index.html declares lang="en".
+  // Screen readers and translation tools rely on this, so set it per route.
+  useEffect(() => {
+    const previous = document.documentElement.lang
+    document.documentElement.lang = 'de'
+    return () => { document.documentElement.lang = previous }
+  }, [])
   return (
     <div className="page-legal">
       <Helmet>

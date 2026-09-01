@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Info } from 'lucide-react'
 import Helmet from '../components/Helmet'
 import { supabase } from '../supabaseClient'
+import { normalizeName } from '../../shared/names.js'
 
 export const Squad = () => {
   const getInitialSeason = () => {
@@ -68,13 +69,13 @@ export const Squad = () => {
 
         if (squadRes.data) {
           const processedPlayers = squadRes.data.map(player => {
-            const cleanPlayerName = player.name.trim().toLowerCase()
+            const cleanPlayerName = normalizeName(player.name)
             const mappedNames = (mappingsRes.data || [])
-              .filter(m => m.target_name.trim().toLowerCase() === cleanPlayerName)
-              .map(m => m.source_name.trim().toLowerCase())
+              .filter(m => normalizeName(m.target_name) === cleanPlayerName)
+              .map(m => normalizeName(m.source_name))
 
             const playerStatsList = statsRes.data?.filter(stat => {
-              const cleanStatName = stat.player_name.trim().toLowerCase()
+              const cleanStatName = normalizeName(stat.player_name)
               return cleanStatName === cleanPlayerName || mappedNames.includes(cleanStatName)
             }) || []
 
