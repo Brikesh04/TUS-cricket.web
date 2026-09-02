@@ -174,15 +174,12 @@ export const JoinUs = () => {
       <main className="section-padding">
         <div className="container container--narrow">
           <div className="section-head">
-            <h1>Join the Squad</h1>
-            <span className="label">First session free</span>
-          </div>
-
-          <div className="prose mb-4">
+            <span className="eyebrow">First session free</span>
+            <h1>Come and play</h1>
             <p>
-              Take your game to the next level with TuS Cricket Pfarrkirchen. Beginners
-              and experienced players are equally welcome — tell us a little about
-              yourself and we&rsquo;ll be in touch with training times.
+              Beginners and old hands are equally welcome — quite a few of us had never
+              played before joining. Fill this in and we&rsquo;ll message you the next
+              training time. Bring trainers; we&rsquo;ll sort the rest.
             </p>
           </div>
 

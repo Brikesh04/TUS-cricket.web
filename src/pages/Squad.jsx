@@ -317,8 +317,12 @@ export const Squad = () => {
       <main className="section-padding">
         <div className="container">
           <div className="section-head">
-            <h1>The Squad</h1>
-            <span className="label">Verbandsliga · T20 &amp; 50 Overs</span>
+            <span className="eyebrow">The team</span>
+            <h1>Meet the squad</h1>
+            <p>
+              Twenty-two of us this season, playing T20 and 50-over cricket in the
+              Verbandsliga. Stats come straight from CricClubs after every match.
+            </p>
           </div>
 
           {/* Photo Carousel */}
@@ -401,6 +405,7 @@ export const Squad = () => {
                 ))}
               </div>
 
+              <div className="scorecard-wrap">
               <table className="scorecard">
                 <thead>
                   <tr>
@@ -447,7 +452,7 @@ export const Squad = () => {
                 <tbody>
                   {visiblePlayers.map((player, index) => (
                     <tr key={player.id} className={index === 0 ? 'top-player' : ''}>
-                      <td className="col-pos">{index + 1}</td>
+                      <td className="col-pos"><span className="pos-badge">{index + 1}</span></td>
                       <td className="col-player">
                         <span className="player-name-container">{player.name}</span>
                         <span className="player-role-subtext">{getPreferredRole(player)}</span>
@@ -461,6 +466,7 @@ export const Squad = () => {
                   ))}
                 </tbody>
               </table>
+              </div>
  
               {hasMorePlayers && (
                 <button

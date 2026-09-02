@@ -1,51 +1,41 @@
 /* ============================================================
    Design tokens — TuS Cricket Pfarrkirchen
-   Direction: cricket almanac / scorecard. Ink on paper, hairline
-   rules, tabular figures, minimal colour.
+   Direction: "Saturday at the ground". Photo-led and warm. Club
+   colours used as real colour, not accents. Bright, not austere.
    ============================================================ */
 
 :root {
-  /* --- Paper & ink -------------------------------------------------
-     Never pure #FFF/#000: the warm off-white reads as printed stock. */
-  --paper: #FBFAF6;
-  --paper-sunk: #F3F1EA;   /* inset panels, sunk table headers */
-  --paper-edge: #EFECE1;   /* the band behind the skyline plate */
+  /* --- Club colours, sampled from public/logo.png (the crest) -------
+     These carry the page; they are not garnish on a neutral ground. */
+  --blue: #134493;         /* crest banner + Bavarian diamonds */
+  --blue-deep: #0D2F68;    /* headings, text on light, hover */
+  --blue-soft: #E8EFFB;    /* tinted panels */
+  --gold: #F2D902;         /* crest crown + lettering — highlights, CTAs */
+  --gold-deep: #8A7B00;    /* gold as text, dark enough to read on white */
+  --grass: #3F7D34;        /* the pitch in the team photos */
+  --clay: #E1011B;         /* crest lion — top-of-table marker only */
 
-  --ink: #16150F;          /* warm near-black — body text, heavy rules */
-  --ink-muted: #57544A;    /* secondary prose */
-  --ink-faint: #8A8779;    /* captions, labels, disabled */
-
-  /* --- Rules -------------------------------------------------------
-     Structure comes from rules, not shadows. */
-  --rule: #DCD8C9;         /* hairline between rows */
-  --rule-mid: #B8B3A1;     /* section separators */
-  --rule-heavy: var(--ink);/* under section heads and table heads */
-
-  /* --- Club colours ------------------------------------------------
-     Sampled directly from public/logo.png (the TuS 1860 crest),
-     not chosen by eye. Used sparingly — this is an ink-on-paper
-     design, colour is an accent, never a surface. */
-  --club-blue: #134493;    /* crest banner + Bavarian diamonds */
-  --club-gold: #F2D902;    /* crest crown + "TuS 1860" lettering */
-  --club-red: #E1011B;     /* crest lion — top-rank marker only */
-
-  --club-blue-deep: #0D2F68;  /* darkened for text on paper (AA) */
-  --club-red-deep: #A80115;   /* darkened for text on paper (AA) */
+  /* --- Neutrals, biased blue toward the accent rather than plain grey */
+  --paper: #FFFFFF;
+  --paper-tint: #F2F6FC;   /* section grounds, table zebra */
+  --ink: #14213D;          /* deep blue-black */
+  --ink-soft: #4A5A78;     /* body copy */
+  --ink-faint: #7C8AA5;    /* captions, labels */
+  --line: #DCE4F0;
+  --line-strong: #B9C7DE;
 
   /* --- Type --------------------------------------------------------
-     Two families. Serif carries display and figures of record;
-     Inter carries UI and data, with tabular numerals. */
-  --font-display: "Source Serif 4", "Iowan Old Style", Georgia, "Times New Roman", serif;
-  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+     Archivo carries headings at an expanded width — sturdy and sporty
+     without the condensed-team-jersey cliché. Figtree is the warm,
+     round-terminalled body face. Neither is the usual default. */
+  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --wdth-display: "wdth" 115;
+  --tracking-label: 0.06em;
 
-  --tracking-label: 0.08em;  /* letterspaced uppercase labels */
-  --tracking-wide: 0.18em;   /* masthead + skyline lettering */
+  --measure: 60ch;
 
-  /* --- Measure -----------------------------------------------------  */
-  --measure: 62ch;         /* prose column */
-
-  /* --- Space -------------------------------------------------------
-     4px base, linear-ish ramp (the old scale jumped 8→12→20). */
+  /* --- Space (4px base) -------------------------------------------- */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -54,16 +44,23 @@
   --space-6: 32px;
   --space-7: 48px;
   --space-8: 64px;
-  --space-9: 96px;
-  --space-10: 128px;
+  --space-9: 88px;
+
+  /* Roundness is spent where things should feel touchable, not
+     stamped on every block. */
+  --radius: 10px;
+  --radius-tight: 6px;
+  --radius-pill: 999px;
+
+  /* One soft lift, used only on things that genuinely sit above. */
+  --lift: 0 2px 4px rgba(20, 33, 61, .05), 0 8px 24px rgba(20, 33, 61, .08);
 
   --transition-fast: .18s cubic-bezier(.4, 0, .2, 1);
 
   /* ==================================================================
      LEGACY TOKENS — DO NOT REMOVE
-     styles/admin.css still references these. The admin UI was out of
-     scope for the redesign, so the values stay exactly as they were
-     to keep it rendering unchanged. Public styles must not use them.
+     styles/admin.css still references these. The admin UI is out of
+     scope, so the values stay exactly as they were.
      ================================================================== */
   --color-bg: #FFFFFF;
   --color-bg-secondary: #F5F5F7;
@@ -78,7 +75,7 @@
   --glass-border: rgba(255, 255, 255, .3);
   --glass-blur: 20px;
 
-  --font-main: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-main: "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   --spacing-unit: 8px;
   --spacing-xs: calc(var(--spacing-unit) * 1);

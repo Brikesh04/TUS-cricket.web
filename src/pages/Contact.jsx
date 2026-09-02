@@ -14,8 +14,9 @@ export const Contact = () => {
       <main className="section-padding">
         <div className="container">
           <div className="section-head">
-            <h1>Get In Touch</h1>
-            <p>Questions? Friendly matches? We'd love to hear from you.</p>
+            <span className="eyebrow">Say hello</span>
+            <h1>Get in touch</h1>
+            <p>Questions about training, a friendly fixture, or just want to come and watch? Drop us a line.</p>
           </div>
 
           <div className="contact-grid">
@@ -37,7 +38,7 @@ export const Contact = () => {
                 <MapPin size={40} strokeWidth={1.5} />
               </div>
               <h3 className="contact-card-title">Visit Us</h3>
-              <p className="contact-card-text">Our Home Ground</p>
+              <p className="contact-card-text">Our home ground, out on Peter-Adam-Stra&szlig;e.</p>
               <a 
                 href="https://www.google.com/maps/dir/?api=1&destination=Peter-Adam-Straße+52,+84347+Pfarrkirchen" 
                 target="_blank" 

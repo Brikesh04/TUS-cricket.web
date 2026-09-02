@@ -7,125 +7,144 @@ export const Home = () => {
     <div className="page-home">
       <Helmet>
         <title>TuS Cricket | Cricket Club in Pfarrkirchen</title>
-        <meta name="description" content="Official cricket department of TuS 1860 Pfarrkirchen e.V. Indoor winter training and summer league matches (T20 + 50 overs Verbandsliga). Beginners and students welcome." />
+        <meta name="description" content="Cricket in Pfarrkirchen, Bavaria. We train indoors through the winter and play T20 and 50-over league cricket all summer. Beginners welcome — your first session is free." />
         <link rel="canonical" href="https://tus-cricket-pfarrkirchen.de/" />
         <meta property="og:title" content="TuS Cricket Pfarrkirchen | Cricket Club in Pfarrkirchen" />
-        <meta property="og:description" content="Official cricket department of TuS 1860 Pfarrkirchen e.V. Indoor winter training and summer league matches." />
+        <meta property="og:description" content="Cricket in Pfarrkirchen, Bavaria. Beginners welcome — your first session is free." />
         <meta property="og:image" content="https://tus-cricket-pfarrkirchen.de/logo.png" />
         <meta property="og:url" content="https://tus-cricket-pfarrkirchen.de/" />
         <meta property="og:type" content="website" />
       </Helmet>
 
       <main>
-        {/* Masthead */}
-        <header className="masthead fade-in">
-          <div className="container">
-            <img src="/logo.png" alt="" className="masthead-crest" />
-            <h1 className="masthead-title">TuS Cricket</h1>
-            <div className="masthead-rules" role="presentation"></div>
-            <div className="masthead-meta">
-              <span>Pfarrkirchen</span>
-              <span>Gegründet 1860</span>
-              <span>Verbandsliga</span>
-            </div>
-            <p className="masthead-sub">
-              The cricket department of TuS 1860 Pfarrkirchen e.V. — T20 and 50 overs,
-              indoors through the winter, on grass all summer.
-            </p>
-            <div className="masthead-actions">
-              <Link to="/join" className="btn">Join the Team</Link>
-              <Link to="/squad" className="btn btn-secondary">Meet the Squad</Link>
+        {/* Hero — the squad, on a good day */}
+        <section className="hero on-dark">
+          <div className="hero-body">
+            <div className="hero-body-inner">
+              <span className="eyebrow">TuS 1860 Pfarrkirchen</span>
+              <h1>Cricket in Pfarrkirchen.</h1>
+              <p className="hero-lead">
+                We train indoors through the winter and play all summer in the
+                Verbandsliga. Never held a bat before? That is genuinely fine — most of
+                us started somewhere, and your first session is on us.
+              </p>
+              <div className="hero-actions">
+                <Link to="/join" className="btn btn-large">Come to a session</Link>
+                <Link to="/squad" className="btn btn-secondary btn-large">Meet the squad</Link>
+              </div>
             </div>
           </div>
-        </header>
-
-        {/* Town plate */}
-        <div className="skyline-band">
-          <div className="container">
-            <img src="/pfarrkirchen-skyline.png" alt="The Pfarrkirchen town silhouette" />
+          <div className="hero-media">
+            <img
+              src="/team/team-group.jpg"
+              alt="The TuS Cricket squad together at the ground on a sunny training day"
+            />
           </div>
-        </div>
+        </section>
 
-        {/* Trial line */}
-        <div className="trial-line">
+        {/* Quick facts */}
+        <section className="facts">
           <div className="container">
-            <p>
-              New to cricket? Your first session is free —{' '}
-              <Link to="/join" className="text-link">come and try it</Link>.
-            </p>
+            <div className="facts-inner">
+              <div>
+                <div className="fact-k">Since 1860</div>
+                <p className="fact-v">The cricket side of TuS 1860 Pfarrkirchen e.V.</p>
+              </div>
+              <div>
+                <div className="fact-k">Verbandsliga</div>
+                <p className="fact-v">League cricket in T20 and 50-over formats</p>
+              </div>
+              <div>
+                <div className="fact-k">All year</div>
+                <p className="fact-v">Indoors in winter, out on the grass in summer</p>
+              </div>
+              <div>
+                <div className="fact-k">Everyone</div>
+                <p className="fact-v">Beginners, students, families — all welcome</p>
+              </div>
+            </div>
           </div>
-        </div>
+        </section>
 
         {/* Training */}
         <section className="section-padding">
           <div className="container">
             <div className="section-head">
-              <h2>Training &amp; Season</h2>
-              <span className="label">All welcome · Beginners included</span>
+              <span className="eyebrow">When we play</span>
+              <h2>Training &amp; season</h2>
+              <p>
+                Drop in on any training session — no need to book, and there is always
+                a spare bat. Just turn up in something you can run in.
+              </p>
             </div>
 
-            <div className="timetable-grid">
-              <div className="timetable">
-                <h3>Winter</h3>
-                <span className="label">Indoor</span>
-                <table>
-                  <thead>
-                    <tr>
-                      <th scope="col">Day</th>
-                      <th scope="col">Time</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr><td>Saturday</td><td>12:00 – 16:00</td></tr>
-                    <tr><td>Sunday</td><td>10:00 – 15:00</td></tr>
-                  </tbody>
-                </table>
+            <div className="training-grid">
+              <div className="training-card">
+                <h3>Winter <span className="tag">Indoor</span></h3>
+                <ul className="training-list">
+                  <li><span className="day">Saturday</span><span className="time">12:00 – 16:00</span></li>
+                  <li><span className="day">Sunday</span><span className="time">10:00 – 15:00</span></li>
+                </ul>
+                <p className="training-note">
+                  Nets and fitness in the hall while the ground is frozen.
+                </p>
               </div>
 
-              <div className="timetable">
-                <h3>Summer</h3>
-                <span className="label">Outdoor · League</span>
-                <table>
-                  <thead>
-                    <tr>
-                      <th scope="col">Competition</th>
-                      <th scope="col">Format</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr><td>Verbandsliga</td><td>T20</td></tr>
-                    <tr><td>Verbandsliga</td><td>50 Overs</td></tr>
-                  </tbody>
-                </table>
-                <p className="timetable-note">
-                  Match fixtures run through the summer at our home ground on
-                  Peter-Adam-Straße.
+              <div className="training-card">
+                <h3>Summer <span className="tag">Outdoor</span></h3>
+                <ul className="training-list">
+                  <li><span className="day">Verbandsliga</span><span className="time">T20</span></li>
+                  <li><span className="day">Verbandsliga</span><span className="time">50 overs</span></li>
+                </ul>
+                <p className="training-note">
+                  Home matches at our ground on Peter-Adam-Straße. Come and watch —
+                  there is usually tea.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Club */}
-        <section className="section-padding" style={{ paddingTop: 0 }}>
-          <div className="container container--narrow">
-            <div className="section-head">
-              <h2>The Club</h2>
-              <span className="label">Gegründet 1860</span>
+        {/* Invite */}
+        <section className="invite">
+          <div className="container">
+            <div className="invite-inner">
+              <div>
+                <h2>New to cricket? Start with us.</h2>
+                <p>
+                  Your first session is free, kit included. Tell us a little about
+                  yourself and we will let you know when to come down.
+                </p>
+              </div>
+              <Link to="/join" className="btn btn-large">Join the club</Link>
             </div>
-            <div className="prose">
-              <p className="history-lead">
-                TuS 1860 e.V. Pfarrkirchen is a historic multi-sport club deeply rooted in
-                the local community. As a proud department of this club, we uphold its core
-                values—discipline, respect, and teamwork—while fostering a dynamic and
-                competitive cricket culture in Pfarrkirchen.
-              </p>
-              <p>
-                We offer structured training, intense league competition, and dedicated
-                support for player development at all levels. If you seek consistent
-                cricket, unwavering team spirit, and the honour of representing
-                TuS 1860 e.V., you have found your home.
-              </p>
+          </div>
+        </section>
+
+        {/* Club */}
+        <section className="section-padding section-tint">
+          <div className="container">
+            <div className="club-grid">
+              <div>
+                <span className="eyebrow">About us</span>
+                <h2>A cricket club in Lower Bavaria</h2>
+                <div className="prose" style={{ marginTop: 'var(--space-4)' }}>
+                  <p>
+                    TuS 1860 Pfarrkirchen is a multi-sport club that has been part of this
+                    town for well over a century. We are its cricket department — a mix of
+                    people who grew up with the game and people who picked up a bat for the
+                    first time here in Pfarrkirchen.
+                  </p>
+                  <p>
+                    We take the league seriously and everything else a good deal less so.
+                    If you want regular cricket, a team that travels together and somewhere
+                    to spend your Saturdays, come and find us.
+                  </p>
+                </div>
+              </div>
+              <figure>
+                <img src="/pfarrkirchen-skyline.png" alt="The Pfarrkirchen town silhouette" />
+              </figure>
             </div>
           </div>
         </section>
