@@ -199,25 +199,22 @@ export const Home = () => {
 
       <main>
         <section className="hero on-dark">
-          <div className="hero-body">
-            <div className="hero-body-inner">
-              <span className="eyebrow">TuS 1860 Pfarrkirchen</span>
-              <h1>Cricket in Pfarrkirchen.</h1>
-              <p className="hero-lead">
-                We play T20 and 50-over cricket in the Verbandsliga, and train all
-                year — indoors through the winter, out on the grass in summer.
-              </p>
-              <div className="hero-actions">
-                <Link to="/join" className="btn btn-large">Come to a session</Link>
-                <Link to="/squad" className="btn btn-secondary btn-large">Meet the squad</Link>
-              </div>
+          <img
+            className="hero-bg"
+            src="/team/team-lineup.jpg"
+            alt="The TuS Cricket squad lined up on the outfield under heavy cloud"
+          />
+          <div className="container hero-inner">
+            <span className="eyebrow">TuS 1860 Pfarrkirchen</span>
+            <h1>Cricket in Pfarrkirchen.</h1>
+            <p className="hero-lead">
+              We play T20 and 50-over cricket in the Verbandsliga, and train all
+              year — indoors through the winter, out on the grass in summer.
+            </p>
+            <div className="hero-actions">
+              <Link to="/join" className="btn btn-large">Come to a session</Link>
+              <Link to="/squad" className="btn btn-secondary btn-large">Meet the squad</Link>
             </div>
-          </div>
-          <div className="hero-media">
-            <img
-              src="/team/team-group.jpg"
-              alt="The TuS Cricket squad together at the ground on a sunny training day"
-            />
           </div>
         </section>
 
