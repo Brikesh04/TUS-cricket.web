@@ -18,6 +18,8 @@
   /* --- Neutrals, biased blue toward the accent rather than plain grey */
   --paper: #FFFFFF;
   --paper-tint: #F2F6FC;   /* section grounds, table zebra */
+  --board: #0E1419;
+  --board-line: rgba(255, 255, 255, 0.13);
   --ink: #14213D;          /* deep blue-black */
   --ink-soft: #4A5A78;     /* body copy */
   --ink-faint: #7C8AA5;    /* captions, labels */

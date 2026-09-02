@@ -9,56 +9,55 @@ const ResultBadge = ({ result }) => {
   return <span className={`result-badge result-${result.replace(/\s/g, '-')}`}>{label}</span>
 }
 
-// Last result and next fixture, side by side. This is what a club site is for;
-// it renders only when there is actually something to show.
-const MatchStrip = ({ lastResult, nextFixture }) => {
-  if (!lastResult && !nextFixture) return null
+// The hero board. Carries the real next fixture; with no fixtures loaded it
+// falls back to the training times, which are always true, rather than
+// rendering empty cells.
+const Scoreboard = ({ nextFixture, lastResult }) => {
+  const cells = nextFixture
+    ? [
+        { label: 'Date', value: formatMatchDate(nextFixture.match_date), figure: true },
+        { label: 'Opponent', value: nextFixture.opponent, small: true },
+        { label: 'Ground', value: nextFixture.is_home ? 'Home' : 'Away' },
+        { label: 'Start', value: nextFixture.match_time || 'TBC', figure: true }
+      ]
+    : [
+        { label: 'Saturday', value: '12:00', figure: true },
+        { label: 'Until', value: '16:00', figure: true },
+        { label: 'Sunday', value: '10:00', figure: true },
+        { label: 'Until', value: '15:00', figure: true }
+      ]
 
   return (
-    <section className="match-strip">
-      <div className="container">
-        <div className="match-strip-inner">
-          {lastResult && (
-            <article className="match-card">
-              <p className="match-kicker">Last time out</p>
-              <p className="match-teams">
-                <span className="match-vs">{lastResult.is_home ? 'v' : 'away to'}</span>{' '}
-                {lastResult.opponent}
-              </p>
-              <p className="match-meta">
-                {formatMatchDate(lastResult.match_date, { year: 'numeric' })}
-                {lastResult.venue ? ` · ${lastResult.venue}` : ''}
-              </p>
-              <div className="match-outcome">
-                <ResultBadge result={lastResult.result} />
-                {lastResult.result_summary && (
-                  <span className="match-summary">{lastResult.result_summary}</span>
-                )}
-              </div>
-            </article>
-          )}
-
-          {nextFixture && (
-            <article className="match-card match-card--next">
-              <p className="match-kicker">Next up</p>
-              <p className="match-teams">
-                <span className="match-vs">{nextFixture.is_home ? 'v' : 'away to'}</span>{' '}
-                {nextFixture.opponent}
-              </p>
-              <p className="match-meta">
-                {formatMatchDate(nextFixture.match_date, { weekday: 'long', year: 'numeric' })}
-                {nextFixture.match_time ? ` · ${nextFixture.match_time}` : ''}
-              </p>
-              <p className="match-where">
-                {nextFixture.is_home
-                  ? 'At our ground on Peter-Adam-Straße — come and watch.'
-                  : `Away at ${nextFixture.venue || 'their ground'}.`}
-              </p>
-            </article>
-          )}
-        </div>
+    <div className="board">
+      <div className="board-head">
+        <h2>{nextFixture ? 'Next match' : 'Winter training'}</h2>
+        <span>{nextFixture ? (nextFixture.format || 'Verbandsliga') : 'Indoor nets'}</span>
       </div>
-    </section>
+
+      <div className="board-grid">
+        {cells.map(c => (
+          <div className="board-cell" key={c.label + c.value}>
+            <span className="board-label">{c.label}</span>
+            <span className={`board-value${c.figure ? ' board-value--figure' : ''}${c.small ? ' board-value--small' : ''}`}>
+              {c.value}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {lastResult && (
+        <div className="board-foot">
+          <span className="board-label">Last time out</span>
+          <span className={`board-foot-result board-foot-${(lastResult.result || 'tied').replace(/\s/g, '-')}`}>
+            {lastResult.result || '—'}
+          </span>
+          <span>
+            {lastResult.is_home ? 'v' : 'away to'} {lastResult.opponent}
+            {lastResult.result_summary ? ` · ${lastResult.result_summary}` : ''}
+          </span>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -199,26 +198,23 @@ export const Home = () => {
 
       <main>
         <section className="hero on-dark">
-          <img
-            className="hero-bg"
-            src="/team/team-lineup.jpg"
-            alt="The TuS Cricket squad lined up on the outfield under heavy cloud"
-          />
           <div className="container hero-inner">
-            <span className="eyebrow">TuS 1860 Pfarrkirchen</span>
-            <h1>Cricket in Pfarrkirchen.</h1>
-            <p className="hero-lead">
-              We play T20 and 50-over cricket in the Verbandsliga, and train all
-              year — indoors through the winter, out on the grass in summer.
-            </p>
-            <div className="hero-actions">
-              <Link to="/join" className="btn btn-large">Come to a session</Link>
-              <Link to="/squad" className="btn btn-secondary btn-large">Meet the squad</Link>
+            <div>
+              <span className="eyebrow">TuS 1860 Pfarrkirchen</span>
+              <h1>Cricket in Pfarrkirchen.</h1>
+              <p className="hero-lead">
+                T20 and 50-over cricket in the Verbandsliga. We train all year —
+                indoors through the winter, out on the grass in summer.
+              </p>
+              <div className="hero-actions">
+                <Link to="/join" className="btn btn-large">Come to a session</Link>
+                <Link to="/fixtures" className="btn btn-secondary btn-large">Fixtures &amp; results</Link>
+              </div>
             </div>
+
+            <Scoreboard nextFixture={snapshot.nextFixture} lastResult={snapshot.lastResult} />
           </div>
         </section>
-
-        <MatchStrip lastResult={snapshot.lastResult} nextFixture={snapshot.nextFixture} />
 
         {hasCricket && (
           <section className="section-padding">
