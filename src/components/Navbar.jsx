@@ -29,6 +29,9 @@ export const Navbar = () => {
           <NavLink to="/squad" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             Squad
           </NavLink>
+          <NavLink to="/fixtures" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            Fixtures
+          </NavLink>
           <NavLink to="/join" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             Join Us
           </NavLink>
@@ -51,6 +54,9 @@ export const Navbar = () => {
           </NavLink>
           <NavLink to="/squad" onClick={() => setIsOpen(false)} className="mobile-nav-link" tabIndex={isOpen ? 0 : -1}>
             Squad
+          </NavLink>
+          <NavLink to="/fixtures" onClick={() => setIsOpen(false)} className="mobile-nav-link" tabIndex={isOpen ? 0 : -1}>
+            Fixtures
           </NavLink>
           <NavLink to="/join" onClick={() => setIsOpen(false)} className="mobile-nav-link" tabIndex={isOpen ? 0 : -1}>
             Join Us

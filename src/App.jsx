@@ -4,6 +4,7 @@ import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Home from './pages/Home'
 import Squad from './pages/Squad'
+import Fixtures from './pages/Fixtures'
 import JoinUs from './pages/JoinUs'
 import Contact from './pages/Contact'
 import Success from './pages/Success'
@@ -42,6 +43,7 @@ export const App = () => {
           <Route path="/" element={<Home />} />
           <Route path="/join" element={<JoinUs />} />
           <Route path="/squad" element={<Squad />} />
+          <Route path="/fixtures" element={<Fixtures />} />
           
           {/* Legacy redirects */}
           <Route path="/team" element={<Navigate to="/squad" replace />} />

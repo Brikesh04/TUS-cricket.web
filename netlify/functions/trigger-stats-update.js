@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { runStatsSync } from './lib/statsSync.js'
+import { runFixturesSync } from './lib/fixturesSync.js'
 
 const jsonResponse = (statusCode, body) => ({
   statusCode,
@@ -60,7 +61,33 @@ export const handler = async (event) => {
     return jsonResponse(401, { success: false, error: `Could not verify session: ${err.message}` })
   }
 
+  // Body is optional. `{ "dryRun": true }` parses the CricClubs schedule and
+  // league table and reports the detected column mapping without writing
+  // anything — use it to check the scrape after changing any of the URLs.
+  let options = {}
+  try {
+    options = event.body ? JSON.parse(event.body) : {}
+  } catch {
+    return jsonResponse(400, { success: false, error: 'Request body is not valid JSON.' })
+  }
+
+  if (options.dryRun) {
+    const dry = await runFixturesSync({ dryRun: true })
+    const { statusCode, ...body } = dry
+    return jsonResponse(statusCode, body)
+  }
+
   const result = await runStatsSync()
+
+  // As in the scheduled run, a fixtures failure must not sink the stats sync
+  // that already succeeded, so it is reported alongside rather than thrown.
+  let fixtures
+  try {
+    fixtures = await runFixturesSync()
+  } catch (err) {
+    fixtures = { success: false, error: err.message }
+  }
+
   const { statusCode, ...body } = result
-  return jsonResponse(statusCode, body)
+  return jsonResponse(statusCode, { ...body, fixtures })
 }
