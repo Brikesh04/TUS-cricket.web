@@ -1,5 +1,6 @@
-import cheerio from 'cheerio'
+import { load as loadHtml } from 'cheerio'
 import { createClient } from '@supabase/supabase-js'
+import { normalizeName } from '../../shared/names.js'
 
 export const handler = async (event, context) => {
   // Handle CORS preflight options request
@@ -24,6 +25,48 @@ export const handler = async (event, context) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ success: false, error: 'Method Not Allowed' })
+    }
+  }
+
+  // This endpoint scrapes and then writes with the service role key, which
+  // bypasses RLS entirely. Without a session check anyone who knows the URL
+  // could trigger writes to squad stats, so require a signed-in admin first.
+  const authUrl = process.env.VITE_SUPABASE_URL
+  const authAnonKey = process.env.VITE_SUPABASE_ANON_KEY
+  const authHeader = event.headers.authorization || event.headers.Authorization
+  const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
+
+  if (!authUrl || !authAnonKey) {
+    return {
+      statusCode: 500,
+      headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ success: false, error: 'Supabase environment variables are not configured.' })
+    }
+  }
+
+  if (!token) {
+    return {
+      statusCode: 401,
+      headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ success: false, error: 'Missing Authorization header. Please sign in as an admin and try again.' })
+    }
+  }
+
+  try {
+    const authClient = createClient(authUrl, authAnonKey)
+    const { data: authData, error: authError } = await authClient.auth.getUser(token)
+    if (authError || !authData?.user) {
+      return {
+        statusCode: 401,
+        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ success: false, error: 'Invalid or expired session. Please sign in again.' })
+      }
+    }
+  } catch (err) {
+    return {
+      statusCode: 401,
+      headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ success: false, error: `Could not verify session: ${err.message}` })
     }
   }
 
@@ -83,7 +126,7 @@ export const handler = async (event, context) => {
     const existingStats = existingRes.data || []
 
     const getMappedName = (name) => {
-      const m = mappings.find(x => x.source_name.toLowerCase() === name.toLowerCase())
+      const m = mappings.find(x => normalizeName(x.source_name) === normalizeName(name))
       return m ? m.target_name : name
     }
 
@@ -104,7 +147,7 @@ export const handler = async (event, context) => {
     }
 
     const getPlayerRecord = (playerName, format) => {
-      const key = `${format}_${playerName}`
+      const key = `${format}_${normalizeName(playerName)}`
       if (!statsByPlayerFormat[key]) {
         statsByPlayerFormat[key] = {
           player_name: playerName,
@@ -147,7 +190,7 @@ export const handler = async (event, context) => {
         }
 
         const html = await response.text()
-        const $ = cheerio.load(html)
+        const $ = loadHtml(html)
 
         // Locate main statistics table by scoring table structures
         let tableElement = null
@@ -300,7 +343,12 @@ export const handler = async (event, context) => {
     // Attach existing IDs to updated records
     for (const key of Object.keys(statsByPlayerFormat)) {
       const rec = statsByPlayerFormat[key]
-      const existing = existingStats.find(s => s.player_name === rec.player_name && s.format === rec.format)
+      // Normalised on both sides: an existing row stored as "Adul Sherwin
+      // XAVIER" must match a scrape of "Adul Sherwin Xavier" and update it,
+      // rather than miss and insert a duplicate.
+      const existing = existingStats.find(
+        s => normalizeName(s.player_name) === normalizeName(rec.player_name) && s.format === rec.format
+      )
       if (existing) {
         rec.id = existing.id
       }
@@ -310,7 +358,7 @@ export const handler = async (event, context) => {
 
     // Handle ghost records (in DB but missing from scraped pages, reset corresponding category stats to 0)
     for (const existing of existingStats) {
-      const key = `${existing.format}_${existing.player_name}`
+      const key = `${existing.format}_${normalizeName(existing.player_name)}`
       if (!statsByPlayerFormat[key]) {
         let changed = false
         const ghostRecord = { ...existing }

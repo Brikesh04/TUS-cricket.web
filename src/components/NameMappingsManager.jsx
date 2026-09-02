@@ -69,7 +69,21 @@ export const NameMappingsManager = () => {
   const handleSyncStats = async () => {
     setIsSyncing(true)
     try {
-      const response = await fetch('/.netlify/functions/trigger-stats-update', { method: 'POST' })
+      // The endpoint now requires the signed-in admin's session, so pass the
+      // access token through. Without it the sync returns 401.
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData?.session?.access_token
+
+      if (!accessToken) {
+        alert('Your session has expired. Please sign in again before syncing.')
+        setIsSyncing(false)
+        return
+      }
+
+      const response = await fetch('/.netlify/functions/trigger-stats-update', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}` }
+      })
       const data = await response.json()
 
       if (data.success) {
