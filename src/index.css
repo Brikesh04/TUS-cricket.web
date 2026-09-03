@@ -2874,3 +2874,31 @@ to {
 .cricclubs-import .import-preview { color: #2f6b28; margin-bottom: 12px; }
 .cricclubs-import .import-success { color: #2f6b28; margin-top: 14px; font-weight: 600; }
 .cricclubs-import .import-error { color: #b3261e; margin-bottom: 12px; }
+
+.cricclubs-import .bookmarklet-alt {
+  margin: 8px 0 4px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #4a5a78;
+}
+
+.cricclubs-import .bookmarklet-alt kbd {
+  padding: 1px 6px;
+  border: 1px solid #d5dbe5;
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: #f7f9fc;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+}
+
+.cricclubs-import .link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: #134493;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}

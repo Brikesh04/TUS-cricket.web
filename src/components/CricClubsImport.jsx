@@ -21,8 +21,22 @@ export const CricClubsImport = () => {
   const [season, setSeason] = useState(resolveSeason())
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState(null)
+  const [copied, setCopied] = useState(false)
 
   const bookmarklet = useMemo(buildBookmarklet, [])
+
+  // Not everyone keeps a bookmarks bar, and dragging is the only way to create
+  // a bookmarklet from a link. Copying the code lets it be added by hand
+  // through the bookmark manager instead.
+  const copyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(bookmarklet)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 4000)
+    } catch {
+      window.prompt('Copy this, then add it as a bookmark:', bookmarklet)
+    }
+  }
 
   const preview = useMemo(() => {
     if (!pasted.trim()) return null
@@ -118,6 +132,15 @@ export const CricClubsImport = () => {
           <a className="bookmarklet-link" href={bookmarklet} onClick={(e) => e.preventDefault()}>
             Collect CricClubs stats
           </a>
+          <div className="bookmarklet-alt">
+            No bookmarks bar? Press <kbd>⌘⇧B</kbd> (or <kbd>Ctrl+Shift+B</kbd>) to show it —
+            or{' '}
+            <button type="button" className="link-button" onClick={copyCode}>
+              {copied ? 'copied' : 'copy the code'}
+            </button>
+            {' '}and add it by hand: <strong>Bookmarks → Bookmark Manager → Add new bookmark</strong>,
+            any name, and paste the code as the URL.
+          </div>
         </li>
         <li>Open your team&rsquo;s Batting, Bowling or Fielding page on CricClubs.</li>
         <li>Click the bookmark. It reads all three pages and copies the figures.</li>
