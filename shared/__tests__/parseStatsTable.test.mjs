@@ -98,3 +98,59 @@ test('a column the page does not carry comes back null, not zero', () => {
 test('an unknown page type is refused rather than silently producing nothing', () => {
   assert.throws(() => parseStatsTable(battingTable, 'Wicketkeeping'), /Unknown stats page type/)
 })
+
+// The first real import against CricClubs produced names with the surname
+// repeated — "Vishnu Dutt Dwivedi Dwivedi". The name cell holds the full name
+// and then repeats the surname in a second element for a responsive layout,
+// and reading the cell's text glues both together. Because the mangled names
+// matched nothing, every one of them inserted a new row instead of updating.
+import { stripRepeatedTail } from '../parseStatsTable.js'
+
+test('a repeated surname from the name cell is stripped', () => {
+  const seen = {
+    'Vishnu Dutt Dwivedi Dwivedi': 'Vishnu Dutt Dwivedi',
+    'Ashwini Balaji Balaji': 'Ashwini Balaji',
+    'Shubham Bhatta Bhatta': 'Shubham Bhatta',
+    'Vamsi Krishna Kannaji Kannaji': 'Vamsi Krishna Kannaji',
+    'Dushyanthan Satheeskumar Satheeskumar': 'Dushyanthan Satheeskumar'
+  }
+  for (const [mangled, expected] of Object.entries(seen)) {
+    assert.equal(cleanScrapedName(mangled), expected, mangled)
+  }
+})
+
+test('a repeated two-word surname loses both words, not just the last', () => {
+  assert.equal(
+    cleanScrapedName('Isuru Dampathige Koshitha Sandew Koshitha Sandew'),
+    'Isuru Dampathige Koshitha Sandew'
+  )
+  assert.equal(
+    cleanScrapedName('Naren Senthil Kumar Senthil Kumar'),
+    'Naren Senthil Kumar'
+  )
+})
+
+test('a genuinely repeated name is left alone', () => {
+  // This player really is "Pronoy Pronoy" — it must not become "Pronoy",
+  // while the cell's duplicate of it must still be stripped.
+  assert.equal(cleanScrapedName('Pronoy Pronoy'), 'Pronoy Pronoy')
+  assert.equal(cleanScrapedName('Pronoy Pronoy Pronoy'), 'Pronoy Pronoy')
+})
+
+test('ordinary names are untouched', () => {
+  for (const name of ['Anil Tiwari', 'Adul Sherwin Xavier', 'Saurav Bhatta',
+                      'Netharshanan Gnaneswaran', 'Brikesh Vikin Gowrish',
+                      'Saveendra Ravishka', 'Dip Bhowmik Dipta']) {
+    assert.equal(cleanScrapedName(name), name)
+  }
+})
+
+test('the repeat is matched case-insensitively, as CricClubs varies casing', () => {
+  assert.equal(stripRepeatedTail('Vishnu Dutt Dwivedi DWIVEDI'), 'Vishnu Dutt Dwivedi')
+})
+
+test('a name that merely ends in a repeated-looking word is not truncated', () => {
+  // "Kumar Kumaravel" does not end with a repeat of itself.
+  assert.equal(cleanScrapedName('Naren Kumar Kumaravel'), 'Naren Kumar Kumaravel')
+  assert.equal(cleanScrapedName('Bhatta Saurav'), 'Bhatta Saurav')
+})
