@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { normalizeName } from '../../shared/names.js'
 import { mergeScrapedStats } from '../../shared/mergeScrapedStats.js'
@@ -12,7 +12,9 @@ import collectorSource from '../bookmarklet/collectFromCricClubs.js?raw'
 
 const buildBookmarklet = () => {
   const parser = parserSource.replace(/^export /gm, '')
-  return `javascript:${encodeURIComponent(`(function(){${parser}\n${collectorSource}})()`)}`
+  // Baked in so the collector knows where to send what it gathered.
+  const origin = `const TUS_ORIGIN=${JSON.stringify(window.location.origin)};`
+  return `javascript:${encodeURIComponent(`(function(){${origin}${parser}\n${collectorSource}})()`)}`
 }
 
 export const CricClubsImport = () => {
@@ -24,6 +26,24 @@ export const CricClubsImport = () => {
   const [copied, setCopied] = useState(false)
 
   const bookmarklet = useMemo(buildBookmarklet, [])
+  const [handedOff, setHandedOff] = useState(false)
+
+  // The bookmarklet opens this page with the figures in the fragment, so the
+  // copy/switch-tab/paste round trip disappears. The fragment is cleared once
+  // read, so a refresh does not silently re-import.
+  useEffect(() => {
+    const match = window.location.hash.match(/^#cricclubs=(.*)$/)
+    if (!match) return
+    try {
+      const json = decodeURIComponent(match[1])
+      JSON.parse(json)
+      setPasted(json)
+      setHandedOff(true)
+    } catch {
+      setResult({ ok: false, message: 'The figures handed over from CricClubs could not be read. Try the copy-and-paste route instead.' })
+    }
+    window.history.replaceState(null, '', window.location.pathname)
+  }, [])
 
   // Not everyone keeps a bookmarks bar, and dragging is the only way to create
   // a bookmarklet from a link. Copying the code lets it be added by hand
@@ -144,7 +164,7 @@ export const CricClubsImport = () => {
         </li>
         <li>Open your team&rsquo;s Batting, Bowling or Fielding page on CricClubs.</li>
         <li>Click the bookmark. It reads all three pages and copies the figures.</li>
-        <li>Come back here, paste below, choose the format, and import.</li>
+        <li>It opens this page with the figures already filled in — check the format and press Import.</li>
       </ol>
 
       <div className="import-controls">
@@ -174,6 +194,12 @@ export const CricClubsImport = () => {
         placeholder="Paste what the bookmarklet copied"
         onChange={(e) => setPasted(e.target.value)}
       />
+
+      {handedOff && preview && !preview.error && (
+        <p className="import-handoff">
+          Figures arrived from CricClubs. Check the format below, then import.
+        </p>
+      )}
 
       {preview && !preview.error && (
         <p className="import-preview">
