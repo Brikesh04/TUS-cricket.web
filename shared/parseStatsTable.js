@@ -53,13 +53,37 @@ export const findNameColumn = (headers) => {
   return idx === -1 ? 1 : idx
 }
 
+// CricClubs' name cell holds the full name and then repeats the surname in a
+// second element — a responsive layout showing one or the other. Reading the
+// cell's text gets both glued together: "Vishnu Dutt Dwivedi Dwivedi".
+//
+// Strips a trailing run of words that already ends the name. The longest
+// repeat is tried first, so "Isuru Dampathige Koshitha Sandew Koshitha Sandew"
+// loses both words rather than just the last one. The repeat must be shorter
+// than what precedes it, which is what keeps a genuine "Pronoy Pronoy" intact
+// while still fixing "Pronoy Pronoy Pronoy".
+export const stripRepeatedTail = (name) => {
+  const words = name.split(' ').filter(Boolean)
+  for (let k = Math.floor((words.length - 1) / 2); k >= 1; k--) {
+    if (words.length <= 2 * k) continue
+    const tail = words.slice(-k)
+    const before = words.slice(0, -k)
+    if (before.slice(-k).join(' ').toLowerCase() === tail.join(' ').toLowerCase()) {
+      return before.join(' ')
+    }
+  }
+  return name
+}
+
 // Strip the captain/keeper marks CricClubs appends, and collapse whitespace —
 // including the non-breaking spaces it sometimes emits, which JS \s covers.
 export const cleanScrapedName = (raw) =>
-  String(raw ?? '')
-    .replace(/\(c\)|\(wk\)|\*|†/gi, '')
-    .replace(/\s+/g, ' ')
-    .trim()
+  stripRepeatedTail(
+    String(raw ?? '')
+      .replace(/\(c\)|\(wk\)|\*|†/gi, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+  )
 
 // Summary rows carried in the same table as the players.
 export const isNoiseRow = (name) =>
