@@ -5,6 +5,7 @@ import Helmet from '../components/Helmet'
 import { supabase } from '../supabaseClient'
 import NameMappingsManager from '../components/NameMappingsManager'
 import StatsImporter from '../components/StatsImporter'
+import CricClubsImport from '../components/CricClubsImport'
 
 // --- 1. AUTHENTICATION GUARD WRAPPER ---
 export const AuthGuard = ({ children }) => {
@@ -42,7 +43,7 @@ export const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
   const [playerName, setPlayerName] = useState('')
-  const [activeTab, setActiveTab] = useState('players') // 'players', 'mappings', or 'import'
+  const [activeTab, setActiveTab] = useState('players') // 'players', 'mappings', 'import', or 'cricclubs'
   const [error, setError] = useState(null)
   const [reloadCounter, setReloadCounter] = useState(0)
 
@@ -165,6 +166,12 @@ export const AdminDashboard = () => {
             >
               Import CSV Stats
             </button>
+            <button 
+              className={`tab ${activeTab === 'cricclubs' ? 'active' : ''}`}
+              onClick={() => setActiveTab('cricclubs')}
+            >
+              Import from CricClubs
+            </button>
           </div>
 
           {/* Conditional Tab Rendering */}
@@ -239,6 +246,8 @@ export const AdminDashboard = () => {
           {activeTab === 'mappings' && (
             <NameMappingsManager />
           )}
+
+          {activeTab === 'cricclubs' && <CricClubsImport />}
 
           {activeTab === 'import' && (
             <StatsImporter />
