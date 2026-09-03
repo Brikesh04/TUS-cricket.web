@@ -10,6 +10,65 @@ import { resolveSeason } from '../../../shared/season.js'
 //
 // Returns a plain result object rather than an HTTP response; each caller
 // shapes its own reply.
+// CricClubs refuses a bare server-side request with 403. A browser sends far
+// more than a User-Agent, and it arrives carrying a session cookie from having
+// loaded the league's own pages first, so this mimics both: the full header set
+// a navigation request makes, and a warm-up hit on the league landing page
+// whose cookies are then replayed.
+export const BROWSER_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+  Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+  'Accept-Language': 'en-GB,en;q=0.9,de;q=0.8',
+  'Upgrade-Insecure-Requests': '1',
+  'Sec-Fetch-Dest': 'document',
+  'Sec-Fetch-Mode': 'navigate',
+  'Sec-Fetch-User': '?1'
+}
+
+const collectCookies = (response, jar) => {
+  const raw = typeof response.headers.getSetCookie === 'function'
+    ? response.headers.getSetCookie()
+    : [response.headers.get('set-cookie')].filter(Boolean)
+  for (const line of raw) {
+    const pair = String(line).split(';')[0]
+    const eq = pair.indexOf('=')
+    if (eq > 0) jar.set(pair.slice(0, eq).trim(), pair.slice(eq + 1).trim())
+  }
+}
+
+const cookieHeader = (jar) => [...jar].map(([k, v]) => `${k}=${v}`).join('; ')
+
+// 'https://cricclubs.com/League/teamBatting.do?...' -> 'https://cricclubs.com/League/'
+export const leagueBase = (url) => {
+  const u = new URL(url)
+  const first = u.pathname.split('/').filter(Boolean)[0]
+  return first ? `${u.origin}/${first}/` : `${u.origin}/`
+}
+
+export const fetchPage = async (url, jar, referer) => {
+  const headers = { ...BROWSER_HEADERS, 'Sec-Fetch-Site': referer ? 'same-origin' : 'none' }
+  if (referer) headers.Referer = referer
+  const cookie = cookieHeader(jar)
+  if (cookie) headers.Cookie = cookie
+
+  const response = await fetch(url, { headers, redirect: 'follow' })
+  collectCookies(response, jar)
+
+  if (!response.ok) {
+    // The status alone does not say whether this is an edge bot-block or the
+    // application refusing, and that decides the fix, so carry a little of the
+    // body back in the sync report.
+    const body = await response.text().catch(() => '')
+    const snippet = body.replace(/\s+/g, ' ').trim().slice(0, 200)
+    throw new Error(
+      `HTTP ${response.status} fetching URL` +
+      (snippet ? ` — server said: "${snippet}"` : ' — empty response body')
+    )
+  }
+
+  return response.text()
+}
+
 export const runStatsSync = async () => {
   const errors = []
   const diagnostics = {
@@ -92,6 +151,21 @@ export const runStatsSync = async () => {
       return statsByPlayerFormat[key]
     }
 
+    // One cookie jar for the whole run: the league landing page is loaded first
+    // so the stats requests that follow carry a session, the way they would if
+    // a person had clicked through from the league's own menu.
+    const cookieJar = new Map()
+    const firstConfiguredUrl = scrapeTasks.map(t => process.env[t.envKey]).find(Boolean)
+    if (firstConfiguredUrl) {
+      try {
+        await fetchPage(leagueBase(firstConfiguredUrl), cookieJar, null)
+      } catch (err) {
+        // Not fatal on its own — the stats pages are tried regardless, and
+        // their own failure is the one worth reporting.
+        errors.push(`Could not load the league page to start a session: ${err.message}`)
+      }
+    }
+
     // 4. Run scraping tasks
     let anyUrlConfigured = false
     for (const task of scrapeTasks) {
@@ -102,17 +176,7 @@ export const runStatsSync = async () => {
       anyUrlConfigured = true
 
       try {
-        const response = await fetch(url, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
-          }
-        })
-
-        if (!response.ok) {
-          throw new Error(`HTTP error ${response.status} fetching URL`)
-        }
-
-        const html = await response.text()
+        const html = await fetchPage(url, cookieJar, leagueBase(url))
         const $ = loadHtml(html)
 
         // Locate main statistics table by scoring table structures
