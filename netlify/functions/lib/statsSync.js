@@ -1,6 +1,7 @@
 import { load as loadHtml } from 'cheerio'
 import { createClient } from '@supabase/supabase-js'
 import { normalizeName } from '../../../shared/names.js'
+import { resolveSeason } from '../../../shared/season.js'
 
 // The CricClubs scrape-and-write logic, shared by the two ways it runs:
 // the admin's "Sync Stats Now" button (trigger-stats-update.js, which checks
@@ -32,19 +33,7 @@ export const runStatsSync = async () => {
 
   // 2. Determine target season
   // Check CRICCLUBS_SEASON env, then fall back to dynamic date-based matching
-  let season = process.env.CRICCLUBS_SEASON
-  if (!season) {
-    const now = new Date()
-    const year = now.getFullYear()
-    const month = now.getMonth() // 3 is April
-    if (year === 2026 && month >= 3) {
-      season = '2026'
-    } else if (year >= 2027) {
-      season = year.toString()
-    } else {
-      season = '2025'
-    }
-  }
+  const season = process.env.CRICCLUBS_SEASON || resolveSeason()
 
   try {
     // 3. Fetch name mappings & existing player stats
