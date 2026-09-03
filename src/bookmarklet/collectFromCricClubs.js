@@ -67,12 +67,25 @@
       `${payload.batting.length} batting, ${payload.bowling.length} bowling, ` +
       `${payload.fielding.length} fielding rows.`
 
+    // Hand the figures straight to the admin page rather than making someone
+    // copy, switch tab and paste. TUS_ORIGIN is baked in when the bookmarklet
+    // is generated, so it always points at the site that produced it.
+    //
+    // The payload rides in the URL fragment, which browsers never send to the
+    // server — it stays in the page, and these are public cricket figures
+    // either way.
+    if (typeof TUS_ORIGIN === 'string' && TUS_ORIGIN) {
+      const handoff = `${TUS_ORIGIN}/admin#cricclubs=${encodeURIComponent(json)}`
+      // Popup blockers only allow this because a click opened it.
+      const opened = window.open(handoff, '_blank')
+      if (opened) return
+    }
+
+    // No origin baked in, or the popup was blocked — fall back to the clipboard.
     try {
       await navigator.clipboard.writeText(json)
       alert(`Copied ${summary}\n\nGo back to the admin page and paste it into Import from CricClubs.`)
     } catch (clipboardError) {
-      // Clipboard access can be refused; show the text so it can be copied by
-      // hand rather than losing the collection entirely.
       const box = document.createElement('textarea')
       box.value = json
       box.style.cssText = 'position:fixed;inset:5% 5% auto 5%;height:60vh;z-index:2147483647;font:12px monospace;padding:12px'

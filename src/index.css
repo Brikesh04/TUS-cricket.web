@@ -2902,3 +2902,12 @@ to {
   text-decoration: underline;
   cursor: pointer;
 }
+
+.cricclubs-import .import-handoff {
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  border-left: 3px solid #134493;
+  background: #eef3fc;
+  color: #14213d;
+  font-weight: 600;
+}
