@@ -2805,3 +2805,72 @@ to {
 }
 
 
+
+/* ------------------------------------------------------------
+   IMPORT FROM CRICCLUBS (admin)
+   ------------------------------------------------------------ */
+.cricclubs-import { max-width: 720px; }
+.cricclubs-import h2 { margin-bottom: 8px; }
+
+.cricclubs-import .import-intro {
+  color: #4a5a78;
+  margin-bottom: 20px;
+  line-height: 1.55;
+}
+
+.cricclubs-import .import-steps {
+  margin: 0 0 24px 20px;
+  line-height: 1.9;
+  color: #333;
+}
+
+.cricclubs-import .bookmarklet-link {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 6px;
+  background: #134493;
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: grab;
+}
+
+.cricclubs-import .import-controls {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.cricclubs-import .import-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.cricclubs-import .import-controls select,
+.cricclubs-import .import-controls input {
+  padding: 8px 10px;
+  border: 1px solid #d5dbe5;
+  border-radius: 8px;
+  font-size: 14px;
+  min-width: 140px;
+}
+
+.cricclubs-import .import-paste {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d5dbe5;
+  border-radius: 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  resize: vertical;
+  margin-bottom: 12px;
+}
+
+.cricclubs-import .import-preview { color: #2f6b28; margin-bottom: 12px; }
+.cricclubs-import .import-success { color: #2f6b28; margin-top: 14px; font-weight: 600; }
+.cricclubs-import .import-error { color: #b3261e; margin-bottom: 12px; }
