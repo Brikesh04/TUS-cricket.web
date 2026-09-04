@@ -79,10 +79,10 @@ TuS_website/
 To bridge the gap between match statistics tracked on **CricClubs** and the website's squad page, the project supports three data import avenues:
 
 ### 1. Browser Bookmarklet (`bookmarklet.js`)
-An administrative utility designed to run inside the browser. 
-1. Open CricClubs stats page (Batting, Bowling, or Fielding stats table view).
-2. Run the minified bookmarklet code (found in `bookmarklet_minified.txt`) via browser address bar or bookmarks menu.
-3. The bookmarklet scrapes the active HTML tables, translates names against the Supabase `mappings` table, and patches/inserts the statistics directly to Supabase.
+An administrative utility designed to run inside the browser. `bookmarklet.js` is the single source of truth for its logic (with `__SUPABASE_URL__` / `__SUPABASE_ANON_KEY__` placeholders); the admin dashboard's "Alternate Sync" panel imports it at build time (`?raw`) and injects the live Supabase config to produce both the drag-to-bookmark link and the "copy code" button, so there's only one copy of the scraping logic to maintain.
+1. From `/admin` → **Name Mappings**, drag the "Sync to TuS Website" button to your bookmarks bar, or use "Copy Bookmarklet Code" to add it manually.
+2. Open a CricClubs stats page (Batting, Bowling, or Fielding stats table view).
+3. Run the bookmarklet from your bookmarks bar. The bookmarklet scrapes the active HTML table, translates names against the Supabase `mappings` table, and patches/inserts the statistics directly to Supabase.
 
 ### 2. Administrative CSV Upload
 Inside the `/admin` dashboard under **Import CSV Stats**:
@@ -91,7 +91,17 @@ Inside the `/admin` dashboard under **Import CSV Stats**:
 3. Upload the CSV. The importer will auto-detect columns, display a preview, flag any name mismatches, and override the statistics database.
 
 ### 3. Serverless Netlify Function
-The admin dashboard features a "Sync Stats Now" option that triggers a POST request to `/.netlify/functions/trigger-stats-update` for automated synchronizations in production.
+The admin dashboard features a "Sync Stats Now" option that triggers a POST request to `/.netlify/functions/trigger-stats-update` for automated synchronizations in production. The request must carry the logged-in admin's Supabase session as an `Authorization: Bearer <access_token>` header — the function verifies it via `supabase.auth.getUser()` before scraping or writing anything, so the endpoint can't be triggered by an anonymous caller. Writes then use `SUPABASE_SERVICE_ROLE_KEY` so they aren't blocked by the RLS write policies below. The code falls back to the anon key if that variable is unset, but since the anonymous write policies were dropped that fallback will now fail — the key is effectively required.
+
+The actual scrape-and-sync logic (fetching each CricClubs stats page, parsing the table, matching names, writing to Supabase) lives in `netlify/functions/lib/statsSync.js` as `runStatsSync()`, shared by this function and the scheduled sync below — there's one implementation to fix or extend, not two.
+
+### 4. Automatic Weekly Sync
+`netlify/functions/scheduled-stats-sync.js` is a [Netlify Scheduled Function](https://docs.netlify.com/build/functions/scheduled-functions/) that calls the same `runStatsSync()` on its own — no admin has to click anything. It runs every Sunday at 00:00 UTC (`export const config = { schedule: '@weekly' }`); edit that cron expression to change the cadence. Scheduled functions can't be invoked over public HTTP by anyone else — only Netlify's own scheduler (or the "Run now" button on the function's page in the Netlify dashboard, useful for testing) can trigger it — so it needs no session/auth check of its own, unlike the button-triggered function above.
+
+**Required environment variables** (Netlify site dashboard → Site configuration → Environment variables — not `.env`, since these are read server-side by the function, not bundled into the client):
+- At least one of `CRICCLUBS_T20_BATTING_URL`, `CRICCLUBS_T20_BOWLING_URL`, `CRICCLUBS_T20_FIELDING_URL`, `CRICCLUBS_FIFTY_BATTING_URL`, `CRICCLUBS_FIFTY_BOWLING_URL`, `CRICCLUBS_FIFTY_FIELDING_URL` — each is the URL of the corresponding CricClubs stats page for the team. Unlike the bookmarklet (which scrapes whatever page is open in your browser), the scheduled/button-triggered sync has no browser, so without these it has nothing to scrape and simply reports "No CricClubs URLs configured."
+- `SUPABASE_SERVICE_ROLE_KEY` — required so both sync paths can write despite the RLS write policies below.
+- Optional `CRICCLUBS_SEASON` to pin the season instead of relying on the date-based default.
 
 ---
 
@@ -167,9 +177,14 @@ Below are the default tables required in your Supabase database instance to back
 
 ## 🔒 Row Level Security (RLS) Configuration in Supabase
 
-Because the client uses the public anonymous key (`anon`) to read player statistics, it is **highly recommended** to configure proper **Row Level Security (RLS)** in the Supabase Dashboard. This prevents unauthorized users from modifying your website database.
+Because the client uses the public anonymous key (`anon`) to read player statistics, **Row Level Security (RLS)** is what actually prevents unauthorized users from modifying the database — the admin dashboard's `AuthGuard` only hides UI, it enforces nothing.
 
-### Recommended RLS Policies
+RLS is enabled on `squad`, `player_stats`, `mappings`, and `seasons`, and the access model below is live as of 2026-08-31.
+
+> [!WARNING]
+> Adding policies does **not** restrict access. Postgres RLS policies are *permissive* — they OR together, so one open policy grants access regardless of how many stricter policies sit beside it. Closing a hole means **dropping** the offending policy, which is what `supabase/migrations/20260831012527_drop_anon_write_policies.sql` does.
+
+### Access model
 
 1. **`squad` Table**:
    - **SELECT**: Enable for `anon` (public read-only access).
@@ -184,5 +199,18 @@ Because the client uses the public anonymous key (`anon`) to read player statist
    - **INSERT, UPDATE, DELETE**: Restrict to authenticated users.
 
 > [!IMPORTANT]
-> If you enforce RLS policies that restrict write operations to authenticated sessions, direct bookmarklet updates using the anon key will be blocked. In this setup, administrators must use the **CSV Importer** from the logged-in `/admin` dashboard or trigger syncs via a secure serverless function that uses service role privileges.
+> **The browser bookmarklet no longer works for writing stats.** It authenticated with the anon key, which relied on the open anonymous INSERT/UPDATE policies that were dropped on 2026-08-31. Anonymous write access cannot be secured with a key that ships in the public JS bundle, so it was removed in favour of the paths below. `bookmarklet.js` is retained for reference only.
+
+Write paths that work under this model:
+
+| Path | Credential | Works |
+|---|---|---|
+| Admin dashboard CRUD (`/admin`) | Logged-in admin session (`authenticated`) | ✅ |
+| CSV Importer | Logged-in admin session (`authenticated`) | ✅ |
+| "Sync Stats Now" button | `SUPABASE_SERVICE_ROLE_KEY` (bypasses RLS) | ✅ |
+| Weekly scheduled sync | `SUPABASE_SERVICE_ROLE_KEY` (bypasses RLS) | ✅ |
+| Public squad page reads | anon key + public SELECT policies | ✅ |
+| Browser bookmarklet | anon key | ❌ removed |
+
+Because both sync paths depend on it, `SUPABASE_SERVICE_ROLE_KEY` **must** be set in Netlify. The sync functions fall back to the anon key when it's missing, and that fallback is now blocked by RLS — so an unset key means the sync silently stops writing.
 

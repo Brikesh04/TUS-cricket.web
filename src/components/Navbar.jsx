@@ -15,10 +15,10 @@ export const Navbar = () => {
   }, [])
 
   return (
-    <nav className={`navbar ${isScrolled ? 'scrolled glass' : ''}`}>
+    <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
       <div className="container navbar-container">
         <NavLink to="/" className="navbar-logo">
-          <img src="/logo.png" alt="TUS Cricket Logo" className="logo-img" />
+          <img src="/logo.png" alt="TuS 1860 Pfarrkirchen crest" className="logo-img" />
           <span className="logo-text">TuS Cricket</span>
         </NavLink>
 
@@ -28,6 +28,9 @@ export const Navbar = () => {
           </NavLink>
           <NavLink to="/squad" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             Squad
+          </NavLink>
+          <NavLink to="/fixtures" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            Fixtures
           </NavLink>
           <NavLink to="/join" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             Join Us
@@ -45,12 +48,15 @@ export const Navbar = () => {
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
 
-        <div className={`mobile-menu glass ${isOpen ? 'active' : ''}`}>
+        <div className={`mobile-menu ${isOpen ? 'active' : ''}`}>
           <NavLink to="/" onClick={() => setIsOpen(false)} className="mobile-nav-link" tabIndex={isOpen ? 0 : -1}>
             Home
           </NavLink>
           <NavLink to="/squad" onClick={() => setIsOpen(false)} className="mobile-nav-link" tabIndex={isOpen ? 0 : -1}>
             Squad
+          </NavLink>
+          <NavLink to="/fixtures" onClick={() => setIsOpen(false)} className="mobile-nav-link" tabIndex={isOpen ? 0 : -1}>
+            Fixtures
           </NavLink>
           <NavLink to="/join" onClick={() => setIsOpen(false)} className="mobile-nav-link" tabIndex={isOpen ? 0 : -1}>
             Join Us

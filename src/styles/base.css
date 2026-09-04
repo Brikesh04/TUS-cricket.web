@@ -1,0 +1,252 @@
+/* ============================================================
+   Reset, base typography, layout primitives
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--paper);
+  color: var(--ink-soft);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Headings ------------------------------------------------------
+   Archivo at an expanded width: sturdy and sporty, but upper/lower
+   case rather than shouty condensed caps. */
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-variation-settings: var(--wdth-display);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+h1 { font-size: clamp(2.125rem, 5vw, 3.375rem); }
+h2 { font-size: clamp(1.625rem, 3.2vw, 2.25rem); }
+h3 { font-size: 1.25rem; }
+h4 { font-size: 1.0625rem; }
+
+p { text-wrap: pretty; }
+
+a { color: inherit; text-decoration: none; }
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+img { max-width: 100%; display: block; }
+
+table, .tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+::selection { background: var(--gold); color: var(--ink); }
+
+:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* --- Layout --------------------------------------------------------  */
+
+.container {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 var(--space-5);
+}
+
+.container--narrow { max-width: 720px; }
+
+.section-padding { padding: var(--space-9) 0; }
+
+.section-tint { background: var(--paper-tint); }
+
+/* --- Shared pieces -------------------------------------------------- */
+
+.eyebrow {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--blue);
+}
+
+.section-head { margin-bottom: var(--space-6); }
+.section-head h1,
+.section-head h2 { margin-top: var(--space-2); }
+
+.section-head p {
+  margin-top: var(--space-3);
+  max-width: var(--measure);
+  color: var(--ink-soft);
+}
+
+/* On a full-width container the intro sits beside the heading rather than
+   leaving half the row empty. Narrow containers (the join form) stay stacked. */
+@media (min-width: 900px) {
+  .container:not(.container--narrow) > .section-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    column-gap: var(--space-8);
+    align-items: baseline;
+  }
+  .container:not(.container--narrow) > .section-head > .eyebrow {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .container:not(.container--narrow) > .section-head > h1,
+  .container:not(.container--narrow) > .section-head > h2 {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .container:not(.container--narrow) > .section-head > p {
+    grid-column: 2;
+    grid-row: 2;
+    margin-top: 0;
+    max-width: 46ch;
+  }
+}
+
+.prose { max-width: var(--measure); }
+.prose p + p { margin-top: var(--space-4); }
+
+.text-link {
+  color: var(--blue);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.18em;
+  text-decoration-color: var(--gold);
+  transition: color var(--transition-fast);
+}
+
+.text-link:hover { color: var(--blue-deep); }
+
+/* --- Buttons -------------------------------------------------------
+   Rounded enough to look pressable; gold is the "yes, come along"
+   button and blue the quieter one. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 14px 26px;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  border: 2px solid var(--gold);
+  border-radius: var(--radius-pill);
+  background: var(--gold);
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform var(--transition-fast), background var(--transition-fast),
+    border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.btn:hover { transform: translateY(-2px); background: #FFE838; border-color: #FFE838; }
+.btn:active { transform: none; }
+
+.btn-secondary {
+  background: transparent;
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+.btn-secondary:hover {
+  background: var(--blue-soft);
+  border-color: var(--blue);
+  color: var(--blue-deep);
+}
+
+/* On a dark blue ground the outline button needs light edges. */
+.on-dark .btn-secondary {
+  border-color: rgba(255, 255, 255, .5);
+  color: #fff;
+}
+.on-dark .btn-secondary:hover {
+  background: rgba(255, 255, 255, .12);
+  border-color: #fff;
+  color: #fff;
+}
+
+.btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+.btn-large { padding: 16px 32px; font-size: 1.0625rem; }
+
+/* --- Motion --------------------------------------------------------  */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+.fade-in { animation: fadeUp .5s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* --- Utilities kept for compatibility ------------------------------ */
+.text-center { text-align: center; }
+.mb-1 { margin-bottom: var(--space-2); }
+.mb-2 { margin-bottom: var(--space-3); }
+.mb-4 { margin-bottom: var(--space-6); }
+.mb-5 { margin-bottom: var(--space-7); }
+
+@media (max-width: 768px) {
+  .section-padding { padding: var(--space-7) 0; }
+  .container { padding: 0 var(--space-4); }
+  .hide-mobile { display: none; }
+}
+
+/* Visible to screen readers only — used for table captions that name the
+   table for assistive tech without repeating the heading above it. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

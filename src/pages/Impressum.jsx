@@ -1,7 +1,15 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import Helmet from '../components/Helmet'
 
 export const Impressum = () => {
+
+  // These pages are entirely in German while index.html declares lang="en".
+  // Screen readers and translation tools rely on this, so set it per route.
+  useEffect(() => {
+    const previous = document.documentElement.lang
+    document.documentElement.lang = 'de'
+    return () => { document.documentElement.lang = previous }
+  }, [])
   return (
     <div className="page-legal">
       <Helmet>
@@ -10,7 +18,7 @@ export const Impressum = () => {
       </Helmet>
 
       <main className="section-padding">
-        <div className="container" style={{ maxWidth: '800px' }}>
+        <div className="container container--narrow">
           <h1 className="mb-4">Impressum</h1>
           
           <section className="mb-4">
@@ -35,7 +43,7 @@ export const Impressum = () => {
             <h3>Kontakt</h3>
             <p>
               E-Mail:{' '}
-              <a href="mailto:tuscricket@gmail.com" style={{ color: 'var(--color-primary)' }}>
+              <a href="mailto:tuscricket@gmail.com">
                 tuscricket@gmail.com
               </a>
             </p>
@@ -67,7 +75,7 @@ export const Impressum = () => {
                 href="https://ec.europa.eu/consumers/odr" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                style={{ color: 'var(--color-primary)', marginLeft: '5px' }}
+               
               >
                 https://ec.europa.eu/consumers/odr
               </a>

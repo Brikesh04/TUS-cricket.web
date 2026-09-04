@@ -1,6 +1,6 @@
 import { load as loadHtml } from 'cheerio'
 import { createClient } from '@supabase/supabase-js'
-import { normalizeName } from '../../../shared/names.js'
+import { normalizeName, isLikelyNameFragment } from '../../../shared/names.js'
 import { resolveSeason } from '../../../shared/season.js'
 
 // The CricClubs scrape-and-write logic, shared by the two ways it runs:
@@ -71,6 +71,7 @@ export const fetchPage = async (url, jar, referer) => {
 
 export const runStatsSync = async () => {
   const errors = []
+  const rejectedNames = new Set()
   const diagnostics = {
     t20: { batting: 0, bowling: 0, fielding: 0 },
     fifty: { batting: 0, bowling: 0, fielding: 0 }
@@ -233,13 +234,27 @@ export const runStatsSync = async () => {
         if (nameIdx === -1) nameIdx = 1
 
         let scrapedCount = 0
+        let rejectedThisTask = 0
         for (let i = headerRowIdx + 1; i < rowElements.length; i++) {
           const tds = $(rowElements[i]).children()
           if (tds.length < 4) continue
 
           const rawPlayerName = $(tds[nameIdx]).text().trim()
-          const cleanPlayerName = rawPlayerName.replace(/\(c\)|\(wk\)|\*|\†/gi, '').replace(/\s+/g, ' ').trim()
+          const cleanPlayerName = rawPlayerName
+            .replace(/\(c\)|\(wk\)|\*|\†/gi, '')
+            .replace(/\u00a0/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
           if (!cleanPlayerName || cleanPlayerName.includes('Extras') || cleanPlayerName.includes('Total') || cleanPlayerName.includes('Did not bat')) continue
+
+          // An all-caps value is a misread cell, not a player. Writing these
+          // produced the orphaned "KANNAJI"/"PURAYIL" rows that can never
+          // match a squad member. Report them instead of storing them.
+          if (isLikelyNameFragment(cleanPlayerName)) {
+            rejectedNames.add(cleanPlayerName)
+            rejectedThisTask++
+            continue
+          }
 
           scrapedCount++
           const targetName = getMappedName(cleanPlayerName)
@@ -300,6 +315,18 @@ export const runStatsSync = async () => {
 
             record.catches = outfieldCatches + wkCatches + stumpings + runOuts
           }
+        }
+
+        // If more rows were rejected than accepted, the name column was almost
+        // certainly misidentified. Fail the task rather than accept a near-empty
+        // result: leaving scrapedCategories false is what stops the ghost-record
+        // pass below from reading the absence as "nobody played" and zeroing
+        // every player's stats for this format.
+        if (rejectedThisTask > scrapedCount) {
+          throw new Error(
+            `rejected ${rejectedThisTask} of ${rejectedThisTask + scrapedCount} names ` +
+            `as unparseable — the name column looks misidentified, refusing to write`
+          )
         }
 
         diagnostics[task.diagKey[0]][task.diagKey[1]] = scrapedCount
@@ -389,13 +416,20 @@ export const runStatsSync = async () => {
     }
 
     // Calculate unique players found
-    const uniquePlayersScraped = new Set(finalPayloads.map(p => p.player_name))
+    const uniquePlayersScraped = new Set(finalPayloads.map(p => normalizeName(p.player_name)))
+
+    if (rejectedNames.size > 0) {
+      errors.push(
+        `Skipped ${rejectedNames.size} unparseable name(s): ${[...rejectedNames].join(', ')}`
+      )
+    }
 
     return {
       success: true,
       statusCode: 200,
       playersUpdated: finalPayloads.length,
       totalFound: uniquePlayersScraped.size,
+      rejectedNames: [...rejectedNames],
       diagnostics,
       errors
     }

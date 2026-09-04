@@ -1,0 +1,104 @@
+/* ============================================================
+   Design tokens — TuS Cricket Pfarrkirchen
+   Direction: "Saturday at the ground". Photo-led and warm. Club
+   colours used as real colour, not accents. Bright, not austere.
+   ============================================================ */
+
+:root {
+  /* --- Club colours, sampled from public/logo.png (the crest) -------
+     These carry the page; they are not garnish on a neutral ground. */
+  --blue: #134493;         /* crest banner + Bavarian diamonds */
+  --blue-deep: #0D2F68;    /* headings, text on light, hover */
+  --blue-soft: #E8EFFB;    /* tinted panels */
+  --gold: #F2D902;         /* crest crown + lettering — highlights, CTAs */
+  --gold-deep: #8A7B00;    /* gold as text, dark enough to read on white */
+  --grass: #3F7D34;        /* the pitch in the team photos */
+  --clay: #E1011B;         /* crest lion — top-of-table marker only */
+
+  /* --- Neutrals, biased blue toward the accent rather than plain grey */
+  --paper: #FFFFFF;
+  --paper-tint: #F2F6FC;   /* section grounds, table zebra */
+  --board: #0E1419;
+  --board-line: rgba(255, 255, 255, 0.13);
+  --ink: #14213D;          /* deep blue-black */
+  --ink-soft: #4A5A78;     /* body copy */
+  --ink-faint: #7C8AA5;    /* captions, labels */
+  --line: #DCE4F0;
+  --line-strong: #B9C7DE;
+
+  /* --- Type --------------------------------------------------------
+     Archivo carries headings at an expanded width — sturdy and sporty
+     without the condensed-team-jersey cliché. Figtree is the warm,
+     round-terminalled body face. Neither is the usual default. */
+  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --wdth-display: "wdth" 115;
+  --tracking-label: 0.06em;
+
+  --measure: 60ch;
+
+  /* --- Space (4px base) -------------------------------------------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 88px;
+
+  /* Roundness is spent where things should feel touchable, not
+     stamped on every block. */
+  --radius: 10px;
+  --radius-tight: 6px;
+  --radius-pill: 999px;
+
+  /* One soft lift, used only on things that genuinely sit above. */
+  --lift: 0 2px 4px rgba(20, 33, 61, .05), 0 8px 24px rgba(20, 33, 61, .08);
+
+  --transition-fast: .18s cubic-bezier(.4, 0, .2, 1);
+
+  /* ==================================================================
+     LEGACY TOKENS — DO NOT REMOVE
+     styles/admin.css still references these. The admin UI is out of
+     scope, so the values stay exactly as they were.
+     ================================================================== */
+  --color-bg: #FFFFFF;
+  --color-bg-secondary: #F5F5F7;
+  --color-text: #1D1D1F;
+  --color-text-secondary: #86868B;
+  --color-primary: #0071E3;
+  --color-primary-hover: #0077ED;
+  --color-primary-dark: #0F766E;
+  --color-accent: #0D9488;
+
+  --glass-bg: rgba(255, 255, 255, .72);
+  --glass-border: rgba(255, 255, 255, .3);
+  --glass-blur: 20px;
+
+  --font-main: "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  --spacing-unit: 8px;
+  --spacing-xs: calc(var(--spacing-unit) * 1);
+  --spacing-sm: calc(var(--spacing-unit) * 2);
+  --spacing-md: calc(var(--spacing-unit) * 4);
+  --spacing-lg: calc(var(--spacing-unit) * 8);
+  --spacing-xl: calc(var(--spacing-unit) * 12);
+  --spacing-xxl: calc(var(--spacing-unit) * 20);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, .04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, .08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, .12);
+  --shadow-xl: 0 12px 48px rgba(0, 0, 0, .16);
+
+  --transition-normal: .4s cubic-bezier(.4, 0, .2, 1);
+
+  --ease-out-spring: cubic-bezier(.175, .885, .32, 1.275);
+  --ease-out-expo: cubic-bezier(.16, 1, .3, 1);
+}
