@@ -1,15 +1,7 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import Helmet from '../components/Helmet'
 
 export const Privacy = () => {
-
-  // These pages are entirely in German while index.html declares lang="en".
-  // Screen readers and translation tools rely on this, so set it per route.
-  useEffect(() => {
-    const previous = document.documentElement.lang
-    document.documentElement.lang = 'de'
-    return () => { document.documentElement.lang = previous }
-  }, [])
   return (
     <div className="page-legal">
       <Helmet>
@@ -18,7 +10,7 @@ export const Privacy = () => {
       </Helmet>
 
       <main className="section-padding">
-        <div className="container container--narrow">
+        <div className="container" style={{ maxWidth: '800px' }}>
           <h1 className="mb-4">Datenschutzerklärung</h1>
 
           <section className="mb-4">

@@ -18,7 +18,7 @@ export const Success = () => {
       <main className="success-page">
         <div className="success-card">
           <div className="success-icon-wrapper">
-            <CheckCircle2 size={40} strokeWidth={1.5} />
+            <CheckCircle2 size={48} color="var(--color-primary-dark)" strokeWidth={2.5} />
           </div>
           <h1 className="success-title">Application Received!</h1>
           <p className="success-message">
