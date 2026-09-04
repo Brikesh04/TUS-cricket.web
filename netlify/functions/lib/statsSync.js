@@ -1,11 +1,74 @@
 import { load as loadHtml } from 'cheerio'
 import { createClient } from '@supabase/supabase-js'
 import { normalizeName, isLikelyNameFragment } from '../../../shared/names.js'
+import { resolveSeason } from '../../../shared/season.js'
 
-// The CricClubs scrape-and-sync logic, shared by the admin-triggered
-// endpoint (netlify/functions/trigger-stats-update.js) and the automatic
-// weekly run (netlify/functions/scheduled-stats-sync.js), so there's one
-// place to fix bugs or adjust the parsing heuristics.
+// The CricClubs scrape-and-write logic, shared by the two ways it runs:
+// the admin's "Sync Stats Now" button (trigger-stats-update.js, which checks
+// the session first) and the nightly automatic run (scheduled-stats-sync.js).
+// One copy so a parsing fix lands in both.
+//
+// Returns a plain result object rather than an HTTP response; each caller
+// shapes its own reply.
+// CricClubs refuses a bare server-side request with 403. A browser sends far
+// more than a User-Agent, and it arrives carrying a session cookie from having
+// loaded the league's own pages first, so this mimics both: the full header set
+// a navigation request makes, and a warm-up hit on the league landing page
+// whose cookies are then replayed.
+export const BROWSER_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+  Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+  'Accept-Language': 'en-GB,en;q=0.9,de;q=0.8',
+  'Upgrade-Insecure-Requests': '1',
+  'Sec-Fetch-Dest': 'document',
+  'Sec-Fetch-Mode': 'navigate',
+  'Sec-Fetch-User': '?1'
+}
+
+const collectCookies = (response, jar) => {
+  const raw = typeof response.headers.getSetCookie === 'function'
+    ? response.headers.getSetCookie()
+    : [response.headers.get('set-cookie')].filter(Boolean)
+  for (const line of raw) {
+    const pair = String(line).split(';')[0]
+    const eq = pair.indexOf('=')
+    if (eq > 0) jar.set(pair.slice(0, eq).trim(), pair.slice(eq + 1).trim())
+  }
+}
+
+const cookieHeader = (jar) => [...jar].map(([k, v]) => `${k}=${v}`).join('; ')
+
+// 'https://cricclubs.com/League/teamBatting.do?...' -> 'https://cricclubs.com/League/'
+export const leagueBase = (url) => {
+  const u = new URL(url)
+  const first = u.pathname.split('/').filter(Boolean)[0]
+  return first ? `${u.origin}/${first}/` : `${u.origin}/`
+}
+
+export const fetchPage = async (url, jar, referer) => {
+  const headers = { ...BROWSER_HEADERS, 'Sec-Fetch-Site': referer ? 'same-origin' : 'none' }
+  if (referer) headers.Referer = referer
+  const cookie = cookieHeader(jar)
+  if (cookie) headers.Cookie = cookie
+
+  const response = await fetch(url, { headers, redirect: 'follow' })
+  collectCookies(response, jar)
+
+  if (!response.ok) {
+    // The status alone does not say whether this is an edge bot-block or the
+    // application refusing, and that decides the fix, so carry a little of the
+    // body back in the sync report.
+    const body = await response.text().catch(() => '')
+    const snippet = body.replace(/\s+/g, ' ').trim().slice(0, 200)
+    throw new Error(
+      `HTTP ${response.status} fetching URL` +
+      (snippet ? ` — server said: "${snippet}"` : ' — empty response body')
+    )
+  }
+
+  return response.text()
+}
+
 export const runStatsSync = async () => {
   const errors = []
   const rejectedNames = new Set()
@@ -14,41 +77,26 @@ export const runStatsSync = async () => {
     fifty: { batting: 0, bowling: 0, fielding: 0 }
   }
 
+  // 1. Initialize Supabase Client
   const supabaseUrl = process.env.VITE_SUPABASE_URL
-  const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
 
-  if (!supabaseUrl || !supabaseAnonKey) {
+  if (!supabaseUrl || !supabaseKey) {
     return {
       success: false,
       statusCode: 500,
-      error: 'Supabase environment variables (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY) are not configured.'
+      error: 'Supabase environment variables (VITE_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY or VITE_SUPABASE_ANON_KEY) are not configured.'
     }
   }
 
-  // Writes use the service role key so they aren't blocked by the RLS
-  // policies that restrict INSERT/UPDATE/DELETE to authenticated sessions
-  // (see supabase/migrations). Falling back to the anon key here only works
-  // if those policies are absent or looser than recommended.
-  const supabase = createClient(supabaseUrl, supabaseServiceKey || supabaseAnonKey)
+  const supabase = createClient(supabaseUrl, supabaseKey)
 
-  // Determine target season: CRICCLUBS_SEASON env, else dynamic date-based matching
-  let season = process.env.CRICCLUBS_SEASON
-  if (!season) {
-    const now = new Date()
-    const year = now.getFullYear()
-    const month = now.getMonth() // 3 is April
-    if (year === 2026 && month >= 3) {
-      season = '2026'
-    } else if (year >= 2027) {
-      season = year.toString()
-    } else {
-      season = '2025'
-    }
-  }
+  // 2. Determine target season
+  // Check CRICCLUBS_SEASON env, then fall back to dynamic date-based matching
+  const season = process.env.CRICCLUBS_SEASON || resolveSeason()
 
   try {
-    // Fetch name mappings & existing player stats
+    // 3. Fetch name mappings & existing player stats
     const [mappingsRes, existingRes] = await Promise.all([
       supabase.from('mappings').select('*'),
       supabase.from('player_stats').select('*').eq('season', parseInt(season))
@@ -60,13 +108,8 @@ export const runStatsSync = async () => {
     const mappings = mappingsRes.data || []
     const existingStats = existingRes.data || []
 
-    // Every name comparison goes through this. CricClubs cells arrive with
-    // stray tabs, non-breaking spaces and doubled spaces, so comparing raw
-    // strings silently fails to match — that is how rows like
-    // "Vamsi Krishna   Kannaji" ended up orphaned from their mapping.
     const getMappedName = (name) => {
-      const key = normalizeName(name)
-      const m = mappings.find(x => normalizeName(x.source_name) === key)
+      const m = mappings.find(x => normalizeName(x.source_name) === normalizeName(name))
       return m ? m.target_name : name
     }
 
@@ -87,7 +130,7 @@ export const runStatsSync = async () => {
     }
 
     const getPlayerRecord = (playerName, format) => {
-      const key = `${format}_${playerName}`
+      const key = `${format}_${normalizeName(playerName)}`
       if (!statsByPlayerFormat[key]) {
         statsByPlayerFormat[key] = {
           player_name: playerName,
@@ -109,7 +152,22 @@ export const runStatsSync = async () => {
       return statsByPlayerFormat[key]
     }
 
-    // Run scraping tasks
+    // One cookie jar for the whole run: the league landing page is loaded first
+    // so the stats requests that follow carry a session, the way they would if
+    // a person had clicked through from the league's own menu.
+    const cookieJar = new Map()
+    const firstConfiguredUrl = scrapeTasks.map(t => process.env[t.envKey]).find(Boolean)
+    if (firstConfiguredUrl) {
+      try {
+        await fetchPage(leagueBase(firstConfiguredUrl), cookieJar, null)
+      } catch (err) {
+        // Not fatal on its own — the stats pages are tried regardless, and
+        // their own failure is the one worth reporting.
+        errors.push(`Could not load the league page to start a session: ${err.message}`)
+      }
+    }
+
+    // 4. Run scraping tasks
     let anyUrlConfigured = false
     for (const task of scrapeTasks) {
       const url = process.env[task.envKey]
@@ -119,17 +177,7 @@ export const runStatsSync = async () => {
       anyUrlConfigured = true
 
       try {
-        const response = await fetch(url, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
-          }
-        })
-
-        if (!response.ok) {
-          throw new Error(`HTTP error ${response.status} fetching URL`)
-        }
-
-        const html = await response.text()
+        const html = await fetchPage(url, cookieJar, leagueBase(url))
         const $ = loadHtml(html)
 
         // Locate main statistics table by scoring table structures
@@ -194,7 +242,7 @@ export const runStatsSync = async () => {
           const rawPlayerName = $(tds[nameIdx]).text().trim()
           const cleanPlayerName = rawPlayerName
             .replace(/\(c\)|\(wk\)|\*|\†/gi, '')
-            .replace(/ /g, ' ')
+            .replace(/\u00a0/g, ' ')
             .replace(/\s+/g, ' ')
             .trim()
           if (!cleanPlayerName || cleanPlayerName.includes('Extras') || cleanPlayerName.includes('Total') || cleanPlayerName.includes('Did not bat')) continue
@@ -297,14 +345,15 @@ export const runStatsSync = async () => {
       }
     }
 
-    // Match with existing records to bind IDs for UPDATE vs INSERT, and execute ghost resets
+    // 5. Match with existing records to bind IDs for UPDATE vs INSERT, and execute ghost resets
     const finalPayloads = []
 
     // Attach existing IDs to updated records
     for (const key of Object.keys(statsByPlayerFormat)) {
       const rec = statsByPlayerFormat[key]
-      // Normalized match: an existing row stored with stray whitespace would
-      // otherwise miss here and be re-inserted as a duplicate.
+      // Normalised on both sides: an existing row stored as "Adul Sherwin
+      // XAVIER" must match a scrape of "Adul Sherwin Xavier" and update it,
+      // rather than miss and insert a duplicate.
       const existing = existingStats.find(
         s => normalizeName(s.player_name) === normalizeName(rec.player_name) && s.format === rec.format
       )
@@ -315,15 +364,10 @@ export const runStatsSync = async () => {
       finalPayloads.push(rec)
     }
 
-    // Handle ghost records (in DB but missing from scraped pages, reset corresponding category stats to 0).
-    // Matched on normalized names: a raw comparison would treat a stored name
-    // with stray whitespace as absent from the scrape and wrongly zero it.
-    const scrapedKeys = new Set(
-      Object.values(statsByPlayerFormat).map(r => `${r.format}_${normalizeName(r.player_name)}`)
-    )
+    // Handle ghost records (in DB but missing from scraped pages, reset corresponding category stats to 0)
     for (const existing of existingStats) {
       const key = `${existing.format}_${normalizeName(existing.player_name)}`
-      if (!scrapedKeys.has(key)) {
+      if (!statsByPlayerFormat[key]) {
         let changed = false
         const ghostRecord = { ...existing }
 
@@ -354,7 +398,7 @@ export const runStatsSync = async () => {
       }
     }
 
-    // Write changes to Supabase
+    // 6. Write changes to Supabase
     const inserts = finalPayloads.filter(p => !p.id)
     const updates = finalPayloads.filter(p => p.id)
 
@@ -371,6 +415,7 @@ export const runStatsSync = async () => {
       if (updateError) throw new Error(`Update failed for ${payload.player_name}: ${updateError.message}`)
     }
 
+    // Calculate unique players found
     const uniquePlayersScraped = new Set(finalPayloads.map(p => normalizeName(p.player_name)))
 
     if (rejectedNames.size > 0) {
@@ -388,6 +433,7 @@ export const runStatsSync = async () => {
       diagnostics,
       errors
     }
+
   } catch (err) {
     return {
       success: false,

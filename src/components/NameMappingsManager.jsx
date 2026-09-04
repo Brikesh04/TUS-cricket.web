@@ -2,21 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { Plus, Trash2, RefreshCw, Copy, ExternalLink } from 'lucide-react'
 import Helmet from './Helmet'
 import { supabase } from '../supabaseClient'
-import bookmarkletTemplate from '../../bookmarklet.js?raw'
-
-// The bookmarklet source lives in one place (bookmarklet.js) and is injected
-// here with the live Supabase config, so the drag-to-bookmark link and the
-// "copy code" button can never drift out of sync with each other.
-const buildBookmarkletCode = () => {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
-  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
-
-  return bookmarkletTemplate
-    .replace('__SUPABASE_URL__', supabaseUrl)
-    .replace('__SUPABASE_ANON_KEY__', supabaseAnonKey)
-    .replace(/\r?\n/g, ' ')
-    .trim()
-}
 
 export const NameMappingsManager = () => {
   const [mappings, setMappings] = useState([])
@@ -84,18 +69,20 @@ export const NameMappingsManager = () => {
   const handleSyncStats = async () => {
     setIsSyncing(true)
     try {
-      if (!supabase) throw new Error('Supabase not initialized')
+      // The endpoint now requires the signed-in admin's session, so pass the
+      // access token through. Without it the sync returns 401.
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData?.session?.access_token
 
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        alert('Your session has expired. Please log in again.')
+      if (!accessToken) {
+        alert('Your session has expired. Please sign in again before syncing.')
         setIsSyncing(false)
         return
       }
 
       const response = await fetch('/.netlify/functions/trigger-stats-update', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${session.access_token}` }
+        headers: { Authorization: `Bearer ${accessToken}` }
       })
       const data = await response.json()
 
@@ -195,71 +182,13 @@ export const NameMappingsManager = () => {
         </div>
       )}
 
-      {/* Dynamic Bookmarklet Panel */}
-      <div className="bookmarklet-card card glass shadow-md" style={{ marginTop: '2.5rem', padding: '2rem', borderRadius: 'var(--radius-lg)', textAlign: 'left', border: '1px solid rgba(16, 185, 129, 0.2)', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.02) 0%, rgba(255, 255, 255, 0.8) 100%)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
-          <span style={{ fontSize: '1.5rem' }}>🔌</span>
-          <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '700', color: 'var(--color-primary-dark)' }}>Alternate Sync: Browser Bookmarklet</h3>
-        </div>
-        <p style={{ color: 'var(--color-text-secondary)', marginBottom: '1.25rem', fontSize: '0.95rem', lineHeight: '1.6' }}>
-          Instead of triggering server-side sync runs (which require configuring Netlify environment variables), you can sync CricClubs player statistics directly from your browser. This bookmarklet automatically uses your website's active Supabase configurations.
-        </p>
-        
-        <div style={{ background: '#f8fafc', border: '1px solid rgba(0,0,0,0.05)', borderRadius: 'var(--radius-md)', padding: '1rem 1.25rem', marginBottom: '1.5rem' }}>
-          <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.95rem', fontWeight: '600' }}>Instructions:</h4>
-          <ol style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.9rem', color: '#475569', lineHeight: '1.6' }}>
-            <li>Drag the green <strong>Sync to TuS Website</strong> button below directly to your browser's Bookmarks Bar (or click the copy button and create a new bookmark manually).</li>
-            <li>Open any CricClubs player statistics table in your browser (e.g., Batting, Bowling, or Fielding stats page).</li>
-            <li>Click the bookmarklet from your bookmarks bar. Follow the prompts to select the format (T20/Fifty) and input the season year.</li>
-          </ol>
-        </div>
-
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
-          <a
-            href={buildBookmarkletCode()}
-            className="bookmarklet-btn"
-            onClick={(e) => {
-              e.preventDefault()
-              alert('Drag this button to your bookmarks bar to install it, or copy the code using the button on the right.')
-            }}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              background: 'var(--color-primary)',
-              color: '#fff',
-              padding: '10px 20px',
-              borderRadius: 'var(--radius-md)',
-              fontWeight: '600',
-              textDecoration: 'none',
-              cursor: 'grab',
-              border: 'none',
-              boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.2)'
-            }}
-          >
-            <ExternalLink size={16} />
-            Sync to TuS Website
-          </a>
-          <button
-            onClick={() => {
-              navigator.clipboard.writeText(buildBookmarkletCode())
-              alert('Bookmarklet code copied to clipboard!')
-            }}
-            className="btn btn-secondary"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 20px',
-              borderRadius: 'var(--radius-md)',
-              fontWeight: '600'
-            }}
-          >
-            <Copy size={16} />
-            Copy Bookmarklet Code
-          </button>
-        </div>
-      </div>
+      {/* The old anon-key bookmarklet lived here. It wrote to Supabase with
+          VITE_SUPABASE_ANON_KEY, and the anonymous INSERT/UPDATE policies it
+          relied on were dropped, so every write it attempted was refused. It
+          also matched players by raw string equality, which is what produced
+          the 39 duplicate rows in player_stats. Replaced by the
+          'Import from CricClubs' tab, which parses with the shared module and
+          writes using the signed-in admin's own session. */}
 
       {showAddModal && (
         <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
